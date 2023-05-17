@@ -1,5 +1,3 @@
-package ElevensLab.Thomas_Final;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -12,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import java.awt.event.MouseMotionListener;
+import java.util.ArrayList;
 import java.awt.event.MouseListener;
 
 public class Platformer extends JPanel implements KeyListener, MouseMotionListener, MouseListener
@@ -27,7 +26,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private static double lastFPSCheck = 0;
     private static double currentFPS = 0;
 
-    private Sprite playerOne = new Sprite(PREF_H - 50, 10);
+    private ArrayList<Platform> platforms = new ArrayList<Platform>();
+
+    private Player playerOne = new Player(PREF_H - 50, 10);
 
 
     public Platformer()
@@ -37,6 +38,8 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         addMouseListener(this);
         setFocusable(true);
         requestFocus();
+
+        platforms.add(new Platform(0, PREF_H - 20, PREF_W, 100));
     }
     
     public Dimension getPreferredSize() {
@@ -49,9 +52,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHints(hints);
-    
-        
 
+        playerOne.draw(g2);
+        playerOne.checkCollisions(platforms);
+        playerOne.update();
         
         //keep this for program to work
         if (!unlimited)
@@ -78,7 +82,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     }
 
     @Override
-    public void keyPressed(KeyEvent e){}
+    public void keyPressed(KeyEvent e){
+        if(e.getKeyCode() == KeyEvent.VK_UP)
+            playerOne.jump();
+    }
 
     @Override
     public void keyReleased(KeyEvent e){}
@@ -104,6 +111,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             }
         });
     }
+    
 
     @Override
     public void mouseDragged(MouseEvent e) {}
