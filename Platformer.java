@@ -73,10 +73,6 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                 currentFPS = totalFrames;
                 totalFrames = 0;
             }
-            g2.setColor(Color.WHITE);
-            g2.fillRect(90, 80, 100, 27);
-            g2.setColor(Color.BLACK);
-            g2.drawString("FPS: "+currentFPS, 100, 100);
             this.repaint();
         }
     }

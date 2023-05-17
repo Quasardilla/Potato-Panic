@@ -46,4 +46,7 @@ public class Sprite {
         y += dy;
     }
 
+    public void draw(Graphics2D g2) {
+    }
+
 }
