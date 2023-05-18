@@ -35,6 +35,8 @@ public class Player extends Sprite {
 
         super.x += (super.dx % 1 > 0.4) ? Math.ceil(super.dx) : Math.floor(super.dx);
         super.y += (super.dy % 1 > 0.4) ? Math.ceil(super.dy) : Math.floor(super.dy);
+
+        super.updateCenter();
     }
 
     public void jump() {
@@ -55,7 +57,7 @@ public class Player extends Sprite {
 
                 switch (side) {
                     case 1: //top
-                        System.out.println("hit top of other sprite");
+                        // System.out.println("hit top of other sprite");
                         isJumping = false;
                         isGrounded = true;
                         super.dy = 0;
@@ -73,8 +75,6 @@ public class Player extends Sprite {
                         break;
                     case 4: //bottom
                         // System.out.println("hit bottom of other sprite");
-                        isJumping = true;
-                        isGrounded = false;
                         super.dy = 0;
                         super.y = p.getY() + p.getHeight();
                         break;

@@ -46,7 +46,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         requestFocus();
 
         platforms.add(new Platform(0, PREF_H - 10, PREF_W, 100));
-        platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W, 100));
+        platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W, 75));
     }
     
     public Dimension getPreferredSize() {
@@ -69,6 +69,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
         for(Platform p : platforms)
             p.update();
+
         playerOne.update();
         
         //keep this for program to work

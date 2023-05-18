@@ -19,28 +19,28 @@ public class Platform extends Sprite{
         this.p1 = p1;
         this.p2 = p2;
         platform = new Rectangle(super.x, super.y, super.width, super.height);
+        System.out.println("Platform: " + platform);
     }
-
+    
     public Platform(int x, int y, int width, int height) {
         super(x, y, width, height);
         this.p1 = new Point(x, y);
         this.p2 = new Point(x + width, y + height);
         platform = new Rectangle(x, y, width, height);
+        System.out.println("Platform: " + platform);
     }
 
     public boolean intersects(Sprite other) {
         Rectangle otherRect = new Rectangle(other.x, other.y, other.getWidth(), other.getHeight());
-        System.out.println("Platform: " + platform);
-        System.out.println("Other: " + otherRect);
-        
+
         return platform.intersects(otherRect);
     }
 
     public int intersectionSide(Sprite other) {
-        double otherY = super.center.getY() - other.center.getY();
-        double otherX = super.center.getX() - other.center.getX();
-        double topLeftSlope = (super.center.getY() - y) / (super.center.getX() - x);
-        double topRightSlope = (super.center.getY() - y) / (super.center.getX() - (x + width));
+        double otherY = -1 * (other.center.getY() - center.getY());
+        double otherX = -1 * (other.center.getX() - center.getX());
+        double topLeftSlope = (y - center.getY()) / (x - center.getX());
+        double topRightSlope = (y - center.getY()) / ((x + width) - center.getX());
 
         if(otherY > topLeftSlope * otherX) {
             if(otherY > topRightSlope * otherX)
@@ -54,6 +54,14 @@ public class Platform extends Sprite{
             else
                 return 4; //bottom
         }
+    }
+
+    public void update() {
+        super.x += (super.dx % 1 > 0.4) ? Math.ceil(super.dx) : Math.floor(super.dx);
+        super.y += (super.dy % 1 > 0.4) ? Math.ceil(super.dy) : Math.floor(super.dy);
+        platform = new Rectangle(super.x, super.y, super.width, super.height);
+
+        super.updateCenter();
     }
 
     public void draw(Graphics2D g2) {
