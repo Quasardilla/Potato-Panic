@@ -1,9 +1,10 @@
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 
-public class Platform {
+public class Platform extends Sprite{
     protected Point p1, p2;
-    protected int x, y, width, height;
     protected Rectangle platform;
 
     /**
@@ -14,30 +15,46 @@ public class Platform {
      *      Bottom right point
      */
     public Platform(Point p1, Point p2) {
+        super((int) p1.getX(), (int) p1.getY(), (int) (p2.getX() - p1.getX()), (int) (p2.getY() - p1.getY()));
         this.p1 = p1;
         this.p2 = p2;
-        this.x = (int) p1.getX();
-        this.y = (int) p1.getY();
-        this.width = (int) (p2.getX() - p1.getX());
-        this.height = (int) (p2.getY() - p1.getY());
-        platform = new Rectangle(x, y, width, height);
+        platform = new Rectangle(super.x, super.y, super.width, super.height);
     }
 
     public Platform(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width; 
-        this.height = height;
+        super(x, y, width, height);
         this.p1 = new Point(x, y);
         this.p2 = new Point(x + width, y + height);
         platform = new Rectangle(x, y, width, height);
     }
 
-    public boolean intersects(Rectangle other) {
-        return platform.intersects(other);
+    public boolean intersects(Sprite other) {
+        return platform.intersects(new Rectangle(other.getX(), other.getY(), other.getWidth(), other.getHeight()));
     }
 
+    public int intersectionSide(Sprite other) {
+        double otherY = super.center.getY() - other.center.getY();
+        double otherX = super.center.getX() - other.center.getX();
+        double topLeftSlope = (super.center.getY() - y) / (super.center.getX() - x);
+        double topRightSlope = (super.center.getY() - y) / (super.center.getX() - (x + width));
 
+        if(otherY > topLeftSlope * otherX) {
+            if(otherY > topRightSlope * otherX)
+                return 1; //top
+            else
+                return 2; //left
+        }
+        else {
+            if(otherY > topRightSlope * otherX)
+                return 3; //right
+            else
+                return 4; //bottom
+        }
+    }
 
+    public void draw(Graphics2D g2) {
+        g2.setColor(Color.BLACK);
+        g2.fillRect(x, y, width, height);
+    }
 
 }

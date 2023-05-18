@@ -17,7 +17,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 {
     private static final long serialVersionUID = 1L;
     private static final int PREF_W = 600;
-    private static final int PREF_H = 400;
+    private static final int PREF_H = 800;
     private RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     
     private static int FPSCap = 60;
@@ -28,7 +28,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     private ArrayList<Platform> platforms = new ArrayList<Platform>();
 
-    private Player playerOne = new Player(PREF_H - 50, 10);
+    private Player playerOne = new Player(PREF_W / 2, PREF_H - 70);
 
 
     public Platformer()
@@ -39,7 +39,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         setFocusable(true);
         requestFocus();
 
-        platforms.add(new Platform(0, PREF_H - 20, PREF_W, 100));
+        platforms.add(new Platform(0, PREF_H - 10, PREF_W, 100));
     }
     
     public Dimension getPreferredSize() {
@@ -52,6 +52,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHints(hints);
+
+        for(Platform p : platforms)
+            p.draw(g2);
 
         playerOne.draw(g2);
         playerOne.checkCollisions(platforms);
@@ -85,6 +88,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     public void keyPressed(KeyEvent e){
         if(e.getKeyCode() == KeyEvent.VK_UP)
             playerOne.jump();
+        if(e.getKeyCode() == KeyEvent.VK_LEFT)
+            platforms.add(new Platform(PREF_W / 4, PREF_H - 300, PREF_W / 2, 100));
+
     }
 
     @Override

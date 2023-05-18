@@ -1,10 +1,12 @@
 import java.awt.Graphics2D;
+import java.awt.Point;
 
 import javax.swing.ImageIcon;
 
 public class Sprite {
     protected int x, y, width, height;
     protected double dx = 0, dy = 0;
+    protected Point center;
     protected ImageIcon img;
 
     public Sprite() {
@@ -13,6 +15,8 @@ public class Sprite {
         this.width = 50;
         this.height = 50;
         this.img = null;
+
+        updateCenter();
     }
 
     public Sprite(int x, int y) {
@@ -21,6 +25,8 @@ public class Sprite {
         this.width = 50;
         this.height = 50;
         this.img = null;
+        
+        updateCenter();
     }
 
     public Sprite(int x, int y, int width, int height) {
@@ -29,6 +35,8 @@ public class Sprite {
         this.width = width;
         this.height = height;
         this.img = null;
+
+        updateCenter();
     }
 
     public Sprite(int x, int y, ImageIcon img) {
@@ -37,6 +45,8 @@ public class Sprite {
         this.width = img.getIconWidth();
         this.height = img.getIconHeight();
         this.img = img;
+
+        updateCenter();
     }
 
     public Sprite(int x, int y, int width, int height, ImageIcon img) {
@@ -45,6 +55,8 @@ public class Sprite {
         this.width = width;
         this.height = height;
         this.img = img;
+
+        updateCenter();
     }
 
     public int getX() {
@@ -63,12 +75,26 @@ public class Sprite {
         return dy;
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public Point getCenter() {
+        return center;
+    }
+
     public void setX(int x) {
         this.x = x;
+        updateCenter();
     }
 
     public void setY(int y) {
         this.y = y;
+        updateCenter();
     }
     
     public void setDx(double dx) {
@@ -79,9 +105,23 @@ public class Sprite {
         this.dy = dy;
     }
 
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    private void updateCenter() {
+        center = new Point(x + (width / 2), y + (height / 2));
+    }
+
     public void update() {
         x += dx;
         y += dy;
+
+        updateCenter();
     }
 
     public void draw(Graphics2D g2) {
