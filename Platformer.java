@@ -20,7 +20,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private static final int PREF_H = 800;
     private RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     
-    private static int FPSCap = 60;
+    // private static int FPSCap = 60;
+    private static int FPSCap = 120;
+    // private static int FPSCap = 5;
     private static boolean unlimited = false;
     private static double totalFrames = 0;
     private static double lastFPSCheck = 0;
@@ -46,7 +48,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         requestFocus();
 
         platforms.add(new Platform(0, PREF_H - 10, PREF_W, 100));
-        platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W, 75));
+        // platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W, 75));
     }
     
     public Dimension getPreferredSize() {
@@ -64,19 +66,29 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             p.draw(g2);    
         playerOne.draw(g2);
 
-        sidewaysVelocity = 1 * (1/currentFPS);
+        double dtime = 1/currentFPS;
+        if(dtime >= 1 || dtime < 0)
+            dtime = 1/FPSCap;
 
         managePlatformSpeed(platforms);
         playerOne.checkCollisions(platforms);
 
         for(Platform p : platforms)
-            p.update();
+            p.update(dtime);
 
-        playerOne.update();
+        playerOne.update(dtime);
         
         //keep this for program to work
         if (!unlimited)
         {
+            totalFrames++;
+            if (System.nanoTime() > lastFPSCheck + 1000000000)
+            {
+                lastFPSCheck = System.nanoTime();
+                currentFPS = totalFrames;
+                totalFrames = 0;
+            }
+
             long millis = System.currentTimeMillis();
             try
             {

@@ -18,8 +18,7 @@ public class Platform extends Sprite{
         super((int) p1.getX(), (int) p1.getY(), (int) (p2.getX() - p1.getX()), (int) (p2.getY() - p1.getY()));
         this.p1 = p1;
         this.p2 = p2;
-        platform = new Rectangle(super.x, super.y, super.width, super.height);
-        System.out.println("Platform: " + platform);
+        platform = new Rectangle((int) super.x, (int) super.y, super.width, super.height);
     }
     
     public Platform(int x, int y, int width, int height) {
@@ -27,11 +26,10 @@ public class Platform extends Sprite{
         this.p1 = new Point(x, y);
         this.p2 = new Point(x + width, y + height);
         platform = new Rectangle(x, y, width, height);
-        System.out.println("Platform: " + platform);
     }
 
     public boolean intersects(Sprite other) {
-        Rectangle otherRect = new Rectangle(other.x, other.y, other.getWidth(), other.getHeight());
+        Rectangle otherRect = new Rectangle((int) other.x, (int) other.y, other.getWidth(), other.getHeight());
 
         return platform.intersects(otherRect);
     }
@@ -41,7 +39,7 @@ public class Platform extends Sprite{
         double otherX = -1 * (other.center.getX() - center.getX());
         double topLeftSlope = (y - center.getY()) / (x - center.getX());
         double topRightSlope = (y - center.getY()) / ((x + width) - center.getX());
-
+        
         if(otherY > topLeftSlope * otherX) {
             if(otherY > topRightSlope * otherX)
                 return 1; //top
@@ -56,17 +54,23 @@ public class Platform extends Sprite{
         }
     }
 
-    public void update() {
-        super.x += (super.dx % 1 > 0.4) ? Math.ceil(super.dx) : Math.floor(super.dx);
-        super.y += (super.dy % 1 > 0.4) ? Math.ceil(super.dy) : Math.floor(super.dy);
-        platform = new Rectangle(super.x, super.y, super.width, super.height);
+    public void update(double deltaTime) {
+        super.dtime = deltaTime;
+
+        x += ((dx * dtime) % 1 > 0.4) ? Math.ceil(dx) : Math.floor(dx);
+        y += ((dy * dtime) % 1 > 0.4) ? Math.ceil(dy) : Math.floor(dy);
+
+        System.out.println(x);
+
+
+        platform = new Rectangle((int) super.x, (int) super.y, super.width, super.height);
 
         super.updateCenter();
     }
 
     public void draw(Graphics2D g2) {
         g2.setColor(Color.BLACK);
-        g2.fillRect(x, y, width, height);
+        g2.fillRect((int)((x % 1 > 0.4) ? Math.ceil(x) : Math.floor(x)), (int) ((y % 1 > 0.4) ? Math.ceil(y) : Math.floor(y)), width, height);
     }
 
 }

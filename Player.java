@@ -5,7 +5,7 @@ import javax.swing.ImageIcon;
 
 public class Player extends Sprite {
 
-    private double gravity = 0.0028, velocity = -1;
+    private double gravity = 800, velocity = -800;
     protected boolean isJumping = true, isGrounded;
 
     public Player() {
@@ -28,13 +28,14 @@ public class Player extends Sprite {
         super(x, y, width, height, img);
     }
 
-    public void update() {
+    public void update(double deltaTime) {
+        super.dtime = deltaTime;
         if(!isGrounded) {
-            super.dy += gravity;
+            super.dy += gravity * dtime;
         }
 
-        super.x += (super.dx % 1 > 0.4) ? Math.ceil(super.dx) : Math.floor(super.dx);
-        super.y += (super.dy % 1 > 0.4) ? Math.ceil(super.dy) : Math.floor(super.dy);
+        x += dx * deltaTime;  
+        y += dy * deltaTime;
 
         super.updateCenter();
     }
@@ -60,28 +61,28 @@ public class Player extends Sprite {
                         // System.out.println("hit top of other sprite");
                         isJumping = false;
                         isGrounded = true;
-                        super.dy = 0;
-                        super.y = p.getY() - super.height;
+                        dy = 0;
+                        y = p.getY() - height;
                         break;
                     case 2: //left
                         // System.out.println("hit left of other sprite");
-                        super.dx = 0;
-                        super.x = p.getX() + p.getWidth();
+                        dx = 0;
+                        x = p.getX() + p.getWidth();
                         break;
                     case 3: //right
                         // System.out.println("hit right of other sprite");
-                        super.dx = 0;
-                        super.x = p.getX() - super.width;
+                        dx = 0;
+                        x = p.getX() - width;
                         break;
                     case 4: //bottom
                         // System.out.println("hit bottom of other sprite");
-                        super.dy = 0;
-                        super.y = p.getY() + p.getHeight();
+                        dy = 0;
+                        y = p.getY() + p.getHeight();
                         break;
                     default:
                         System.out.println("Error: Invalid side (dear god)");
-                        super.dy = 0;
-                        super.y = p.getY() - super.height;
+                        dy = 0;
+                        y = p.getY() - height;
                         break;
                 }
             }

@@ -4,8 +4,9 @@ import java.awt.Point;
 import javax.swing.ImageIcon;
 
 public class Sprite {
-    protected int x, y, width, height;
-    protected double dx = 0, dy = 0;
+    protected int width, height;
+    protected double x, y, dx = 0, dy = 0;
+    protected double dtime = 1;
     protected Point center;
     protected ImageIcon img;
 
@@ -59,11 +60,11 @@ public class Sprite {
         updateCenter();
     }
 
-    public int getX() {
+    public double getX() {
         return x;
     }
 
-    public int getY() {
+    public double getY() {
         return y;
     }
 
@@ -87,12 +88,12 @@ public class Sprite {
         return center;
     }
 
-    public void setX(int x) {
+    public void setX(double x) {
         this.x = x;
         updateCenter();
     }
 
-    public void setY(int y) {
+    public void setY(double y) {
         this.y = y;
         updateCenter();
     }
@@ -114,21 +115,24 @@ public class Sprite {
     }
 
     protected void updateCenter() {
-        center = new Point(x + (width / 2), y + (height / 2));
+        center = new Point((int) x + (width / 2), (int) y + (height / 2));
     }
 
-    public void update() {
-        x += (dx % 1 > 0.4) ? Math.ceil(dx) : Math.floor(dx);
-        y += (dy % 1 > 0.4) ? Math.ceil(dy) : Math.floor(dy);
+    public void update(double deltaTime) {
+        dtime = deltaTime;
+        
+        x += ((dx * deltaTime) % 1 > 0.4) ? Math.ceil(dx) : Math.floor(dx);
+        y += ((dy * deltaTime) % 1 > 0.4) ? Math.ceil(dy) : Math.floor(dy);
 
         updateCenter();
     }
 
     public void draw(Graphics2D g2) {
         if(img != null)
-            g2.drawImage(img.getImage(), x, y, width, height, null);
+            g2.drawImage(img.getImage(), (int)((x % 1 > 0.4) ? Math.ceil(x) : Math.floor(x)), (int) ((y % 1 > 0.4) ? Math.ceil(y) : Math.floor(y)), width, height, null);
         else
-            g2.fillRect(x, y, width, height);
+            g2.fillRect((int)((x % 1 > 0.4) ? Math.ceil(x) : Math.floor(x)), (int) ((y % 1 > 0.4) ? Math.ceil(y) : Math.floor(y)), width, height);
+
         
     }
 
