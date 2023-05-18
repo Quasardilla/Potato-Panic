@@ -29,7 +29,11 @@ public class Platform extends Sprite{
     }
 
     public boolean intersects(Sprite other) {
-        return platform.intersects(new Rectangle(other.getX(), other.getY(), other.getWidth(), other.getHeight()));
+        Rectangle otherRect = new Rectangle(other.x, other.y, other.getWidth(), other.getHeight());
+        System.out.println("Platform: " + platform);
+        System.out.println("Other: " + otherRect);
+        
+        return platform.intersects(otherRect);
     }
 
     public int intersectionSide(Sprite other) {

@@ -118,8 +118,8 @@ public class Sprite {
     }
 
     public void update() {
-        x += dx;
-        y += dy;
+        x += (dx % 1 > 0.4) ? Math.ceil(dx) : Math.floor(dx);
+        y += (dy % 1 > 0.4) ? Math.ceil(dy) : Math.floor(dy);
 
         updateCenter();
     }
