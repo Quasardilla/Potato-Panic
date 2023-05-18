@@ -21,7 +21,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     
     private static int FPSCap = 60;
-    private static boolean unlimited = true;
+    private static boolean unlimited = false;
     private static double totalFrames = 0;
     private static double lastFPSCheck = 0;
     private static double currentFPS = 0;
@@ -63,6 +63,8 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         for(Platform p : platforms)
             p.draw(g2);    
         playerOne.draw(g2);
+
+        sidewaysVelocity = 1 * (1/currentFPS);
 
         managePlatformSpeed(platforms);
         playerOne.checkCollisions(platforms);
