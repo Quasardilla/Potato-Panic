@@ -3,6 +3,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -16,19 +17,19 @@ import java.awt.event.MouseListener;
 public class Platformer extends JPanel implements KeyListener, MouseMotionListener, MouseListener
 {
     private static final long serialVersionUID = 1L;
-    private static final int PREF_W = 600;
-    private static final int PREF_H = 800;
+    private static final int PREF_W = Toolkit.getDefaultToolkit().getScreenSize().width;
+    private static final int PREF_H = Toolkit.getDefaultToolkit().getScreenSize().height;
     private RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     
-    // private static int FPSCap = 60;
-    private static int FPSCap = 120;
+    private static int FPSCap = 60;
+    // private static int FPSCap = 120;
     // private static int FPSCap = 5;
     private static boolean unlimited = false;
     private static double totalFrames = 0;
     private static double lastFPSCheck = 0;
     private static double currentFPS = 0;
 
-    private double sidewaysVelocity = 0.5;
+    private double sidewaysVelocity = 10;
 
     private boolean left, right;
     private int[] leftKeys = new int[] {KeyEvent.VK_LEFT, KeyEvent.VK_A};
@@ -47,7 +48,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         setFocusable(true);
         requestFocus();
 
-        platforms.add(new Platform(0, PREF_H - 10, PREF_W, 100));
+        platforms.add(new Platform(0, PREF_H - 10, PREF_W, 200));
         // platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W, 75));
     }
     
@@ -62,22 +63,23 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHints(hints);
 
+        
+        double dtime = 1/currentFPS;
+        if(dtime >= 1 || dtime < 0)
+        dtime = 1/FPSCap;
+        
+        for(Platform p : platforms)
+            p.update(dtime);
+        playerOne.update(dtime);
+
+        managePlatformSpeed(platforms);
+        playerOne.checkCollisions(platforms);
+        
         for(Platform p : platforms)
             p.draw(g2);    
         playerOne.draw(g2);
 
-        double dtime = 1/currentFPS;
-        if(dtime >= 1 || dtime < 0)
-            dtime = 1/FPSCap;
 
-        managePlatformSpeed(platforms);
-        playerOne.checkCollisions(platforms);
-
-        for(Platform p : platforms)
-            p.update(dtime);
-
-        playerOne.update(dtime);
-        
         //keep this for program to work
         if (!unlimited)
         {
@@ -139,12 +141,16 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private static void createAndShowGUI() {
         Platformer gamePanel = new Platformer();
         JFrame frame = new JFrame("My Frame");
+        
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(gamePanel);
+        frame.setUndecorated(true);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setBackground(Color.WHITE);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); 
         frame.setVisible(true);
+        System.out.println(frame.getInsets());
     }
 
     public static void main(String[] args) {
@@ -180,6 +186,8 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     public void managePlatformSpeed(ArrayList<Platform> platforms) {
         
         for(Platform p : platforms) {
+            p.setDx(-1 * playerOne.getDy());
+
             if(left)
                 p.setDx(sidewaysVelocity);
 

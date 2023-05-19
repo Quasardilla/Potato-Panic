@@ -5,7 +5,7 @@ import javax.swing.ImageIcon;
 
 public class Player extends Sprite {
 
-    private double gravity = 800, velocity = -800;
+    private double gravity = 2800, velocity = -1400;
     protected boolean isJumping = true, isGrounded;
 
     public Player() {
@@ -46,6 +46,15 @@ public class Player extends Sprite {
         super.dy = velocity;
         isJumping = true;
         isGrounded = false;
+    }
+
+    public boolean findFloorCollision(ArrayList<Platform> platforms) {
+        for(Platform p : platforms) {
+            if(p.intersects(new Player((int) (x + dy), (int) (y + 5), width, height)))
+                return true;
+        }
+
+        return false;
     }
 
     public void checkCollisions(ArrayList<Platform> platforms) {
@@ -89,7 +98,10 @@ public class Player extends Sprite {
         }
 
         if(count == 0) {
-            isGrounded = false;
+            if (findFloorCollision(platforms))
+                isGrounded = true;
+            else
+                isGrounded = false;
         }
         
     }

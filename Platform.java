@@ -60,9 +60,6 @@ public class Platform extends Sprite{
         x += ((dx * dtime) % 1 > 0.4) ? Math.ceil(dx) : Math.floor(dx);
         y += ((dy * dtime) % 1 > 0.4) ? Math.ceil(dy) : Math.floor(dy);
 
-        System.out.println(x);
-
-
         platform = new Rectangle((int) super.x, (int) super.y, super.width, super.height);
 
         super.updateCenter();
