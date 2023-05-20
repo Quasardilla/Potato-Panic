@@ -34,15 +34,12 @@ public class Player extends Sprite {
             super.dy += gravity * dtime;
         }
 
-        x += dx * deltaTime;  
-        y += dy * deltaTime;
-
         super.updateCenter();
     }
 
     public void jump() {
-        // if(!isGrounded)
-        //     return;
+        if(!isGrounded)
+            return;
         super.dy = velocity;
         isJumping = true;
         isGrounded = false;
@@ -71,27 +68,27 @@ public class Player extends Sprite {
                         isJumping = false;
                         isGrounded = true;
                         dy = 0;
-                        y = p.getY() - height;
+                        adjustPlatforms(platforms, 0, y - (p.getY() - height));
                         break;
                     case 2: //left
-                        // System.out.println("hit left of other sprite");
+                        // System.out.println("hit left of other sprite"); 
                         dx = 0;
-                        x = p.getX() + p.getWidth();
+                        adjustPlatforms(platforms, x - (p.getX() + p.getWidth()), 0);
                         break;
                     case 3: //right
                         // System.out.println("hit right of other sprite");
                         dx = 0;
-                        x = p.getX() - width;
+                        adjustPlatforms(platforms, x - (p.getX() - width), 0);
                         break;
                     case 4: //bottom
                         // System.out.println("hit bottom of other sprite");
                         dy = 0;
-                        y = p.getY() + p.getHeight();
+                        adjustPlatforms(platforms, 0, y - (p.getY() + p.getHeight()));
                         break;
                     default:
-                        System.out.println("Error: Invalid side (dear god)");
+                        // System.out.println("Error: Invalid side (dear god)");
                         dy = 0;
-                        y = p.getY() - height;
+                        adjustPlatforms(platforms, 0, y - (p.getY() - height));
                         break;
                 }
             }
@@ -104,6 +101,13 @@ public class Player extends Sprite {
                 isGrounded = false;
         }
         
+    }
+
+    private void adjustPlatforms(ArrayList<Platform> platforms, double xAdjustment, double yAdjustment) {
+        for(Platform p : platforms) {
+            p.setX(p.getX() + xAdjustment);
+            p.setY(p.getY() + yAdjustment);
+        }
     }
     
 }

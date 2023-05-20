@@ -57,8 +57,8 @@ public class Platform extends Sprite{
     public void update(double deltaTime) {
         super.dtime = deltaTime;
 
-        x += ((dx * dtime) % 1 > 0.4) ? Math.ceil(dx) : Math.floor(dx);
-        y += ((dy * dtime) % 1 > 0.4) ? Math.ceil(dy) : Math.floor(dy);
+        x += ((dx * dtime) % 1 > 0.4) ? Math.ceil(dx * dtime) : Math.floor(dx * dtime);
+        y += ((dy * dtime) % 1 > 0.4) ? Math.ceil(dy * dtime) : Math.floor(dy * dtime);
 
         platform = new Rectangle((int) super.x, (int) super.y, super.width, super.height);
 

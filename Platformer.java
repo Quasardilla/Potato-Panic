@@ -17,6 +17,8 @@ import java.awt.event.MouseListener;
 public class Platformer extends JPanel implements KeyListener, MouseMotionListener, MouseListener
 {
     private static final long serialVersionUID = 1L;
+
+    //Gets width & height of screen (which is hopefully 1080p)
     private static final int PREF_W = Toolkit.getDefaultToolkit().getScreenSize().width;
     private static final int PREF_H = Toolkit.getDefaultToolkit().getScreenSize().height;
     private RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -29,7 +31,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private static double lastFPSCheck = 0;
     private static double currentFPS = 0;
 
-    private double sidewaysVelocity = 10;
+    private double sidewaysVelocity = 600;
 
     private boolean left, right;
     private int[] leftKeys = new int[] {KeyEvent.VK_LEFT, KeyEvent.VK_A};
@@ -37,7 +39,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     private ArrayList<Platform> platforms = new ArrayList<Platform>();
 
-    private Player playerOne = new Player(PREF_W / 2, PREF_H - 70);
+    private Player playerOne = new Player(PREF_W / 2, PREF_H / 2);
 
 
     public Platformer()
@@ -49,7 +51,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         requestFocus();
 
         platforms.add(new Platform(0, PREF_H - 10, PREF_W, 200));
-        // platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W, 75));
+        platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W / 2, 75));
+        platforms.add(new Platform(0, PREF_H - 600, PREF_W / 2, 75));
+        platforms.add(new Platform(PREF_W / 2, PREF_H - 900, PREF_W / 2, 75));
+
     }
     
     public Dimension getPreferredSize() {
@@ -62,17 +67,18 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHints(hints);
-
         
         double dtime = 1/currentFPS;
         if(dtime >= 1 || dtime < 0)
         dtime = 1/FPSCap;
         
-        for(Platform p : platforms)
-            p.update(dtime);
         playerOne.update(dtime);
 
         managePlatformSpeed(platforms);
+
+        for(Platform p : platforms)
+            p.update(dtime);
+
         playerOne.checkCollisions(platforms);
         
         for(Platform p : platforms)
@@ -186,7 +192,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     public void managePlatformSpeed(ArrayList<Platform> platforms) {
         
         for(Platform p : platforms) {
-            p.setDx(-1 * playerOne.getDy());
+            // System.out.println(-1 * playerOne.getDy());
+            p.setDy(-1 * playerOne.getDy());
+
 
             if(left)
                 p.setDx(sidewaysVelocity);

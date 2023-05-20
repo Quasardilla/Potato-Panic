@@ -41,6 +41,8 @@ public class Client {
     }
 
     public static void main(String[] args) {
+        System.setProperty("java.net.useSystemProxies", "true");
+
         try {
             messageServer();
         } catch (IOException e) {} catch (NamingException e) {}
@@ -51,10 +53,8 @@ public class Client {
         int port = 5100;
         String ip = "rottinger.net";
         
-
         System.out.println("Connecting to " + ip + " on port " + port);
 
-        // client.startConnection("rottinger.net", 5100);
         client.startConnection(ip, port);
         String response = client.sendMessage("hello server");
         System.out.println(response);

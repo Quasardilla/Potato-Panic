@@ -120,9 +120,9 @@ public class Sprite {
 
     public void update(double deltaTime) {
         dtime = deltaTime;
-        
-        x += ((dx * deltaTime) % 1 > 0.4) ? Math.ceil(dx) : Math.floor(dx);
-        y += ((dy * deltaTime) % 1 > 0.4) ? Math.ceil(dy) : Math.floor(dy);
+
+        x += ((dx * dtime) % 1 > 0.4) ? Math.ceil(dx * dtime) : Math.floor(dx * dtime);
+        y += ((dy * dtime) % 1 > 0.4) ? Math.ceil(dy * dtime) : Math.floor(dy * dtime);
 
         updateCenter();
     }
