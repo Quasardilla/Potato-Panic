@@ -93,11 +93,13 @@ public class Player extends Sprite {
                     case 2: //left
                         // System.out.println("hit left of other sprite"); 
                         dx = 0;
+                        wallSliding = true;
                         adjustPlatforms(platforms, x - (p.getX() + p.getWidth()), 0);
                         break;
                     case 3: //right
                         // System.out.println("hit right of other sprite");
                         dx = 0;
+                        wallSliding = true;
                         adjustPlatforms(platforms, x - (p.getX() - width), 0);
                         break;
                     case 4: //bottom
@@ -117,8 +119,6 @@ public class Player extends Sprite {
         if(count == 0) {
             if (findFloorCollision(platforms))
                 isGrounded = true;
-            else if(findWallCollision(platforms))
-                wallSliding = true;
             else {
                 wallSliding = false;
                 isGrounded = false;

@@ -69,21 +69,23 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHints(hints);
 
-        g2.drawString("Dx: " + playerOne.getDx(), 10, 10);
-        g2.drawString("Dy: " + playerOne.getDy(), 10, 20);
-        
         double dtime = 1/currentFPS;
         if(dtime >= 1 || dtime < 0)
         dtime = 1/FPSCap;
         
         managePlayerHorizontalSpeed(playerOne);
         playerOne.update(dtime);
-        playerOne.checkCollisions(platforms);
         
         managePlatformSpeed(platforms);
         for(Platform p : platforms)
-            p.update(dtime);
+        p.update(dtime);
+        
+        playerOne.checkCollisions(platforms);
 
+        
+        g2.drawString("Dx: " + playerOne.getDx(), 10, 10);
+        g2.drawString("Dy: " + playerOne.getDy(), 10, 20);
+        
         
         for(Platform p : platforms)
             p.draw(g2);    
