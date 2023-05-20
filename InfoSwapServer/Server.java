@@ -78,21 +78,4 @@ public class Server {
         }
     }
 
-
-    public static void main(String[] args) {
-        Server server = new Server("localhost", 5100);
-        server.listenForClient();
-        while (true) {
-            try {
-                String input = server.listenForInput();
-                if (input.equals("LOST CONNECTION")) {
-                    break;
-                }
-                System.out.println(input);
-                server.send("Hello Client");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

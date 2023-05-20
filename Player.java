@@ -6,7 +6,7 @@ import javax.swing.ImageIcon;
 public class Player extends Sprite {
 
     private double gravity = 2800, velocity = -1400;
-    protected boolean isJumping = true, isGrounded;
+    protected boolean isJumping = true, isGrounded, wallSliding;
 
     public Player() {
         super();
@@ -29,17 +29,24 @@ public class Player extends Sprite {
     }
 
     public void update(double deltaTime) {
-        super.dtime = deltaTime;
-        if(!isGrounded) {
-            super.dy += gravity * dtime;
+        dtime = deltaTime;
+
+        if(wallSliding) {
+            if(dy < 190)
+                dy += ((gravity * dtime * 2) % 1 > 0.4) ? Math.ceil(gravity * dtime) : Math.floor(gravity * dtime);
+            else if(dy > 190)
+                dy -= ((gravity * dtime * 2) % 1 > 0.4) ? Math.ceil(gravity * dtime) : Math.floor(gravity * dtime);
+        }
+        else if(!isGrounded) {
+            dy += ((gravity * dtime) % 1 > 0.4) ? Math.ceil(gravity * dtime) : Math.floor(gravity * dtime);
         }
 
         super.updateCenter();
     }
 
     public void jump() {
-        if(!isGrounded)
-            return;
+        // if(!isGrounded)
+        //     return;
         super.dy = velocity;
         isJumping = true;
         isGrounded = false;
@@ -47,7 +54,20 @@ public class Player extends Sprite {
 
     public boolean findFloorCollision(ArrayList<Platform> platforms) {
         for(Platform p : platforms) {
-            if(p.intersects(new Player((int) (x + dy), (int) (y + 5), width, height)))
+            if(p.intersects(new Player((int) (x), (int) (y + height + 5), width, height)))
+                return true;
+        }
+
+        return false;
+    }
+
+    public boolean findWallCollision(ArrayList<Platform> platforms) {
+        if(dx == 0)
+            return false;
+        
+
+        for(Platform p : platforms) {
+            if(p.intersects(new Player((int) (x + 5), (int) (y), width, height)))
                 return true;
         }
 
@@ -97,8 +117,12 @@ public class Player extends Sprite {
         if(count == 0) {
             if (findFloorCollision(platforms))
                 isGrounded = true;
-            else
+            else if(findWallCollision(platforms))
+                wallSliding = true;
+            else {
+                wallSliding = false;
                 isGrounded = false;
+            }
         }
         
     }

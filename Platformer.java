@@ -50,11 +50,12 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         setFocusable(true);
         requestFocus();
 
+        
         platforms.add(new Platform(0, PREF_H - 10, PREF_W, 200));
+        platforms.add(new Platform(-100, 0, 100, PREF_H + 200));
         platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W / 2, 75));
         platforms.add(new Platform(0, PREF_H - 600, PREF_W / 2, 75));
         platforms.add(new Platform(PREF_W / 2, PREF_H - 900, PREF_W / 2, 75));
-
     }
     
     public Dimension getPreferredSize() {
@@ -67,19 +68,22 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHints(hints);
+
+        g2.drawString("Dx: " + playerOne.getDx(), 10, 10);
+        g2.drawString("Dy: " + playerOne.getDy(), 10, 20);
         
         double dtime = 1/currentFPS;
         if(dtime >= 1 || dtime < 0)
         dtime = 1/FPSCap;
         
+        managePlayerHorizontalSpeed(playerOne);
         playerOne.update(dtime);
-
+        playerOne.checkCollisions(platforms);
+        
         managePlatformSpeed(platforms);
-
         for(Platform p : platforms)
             p.update(dtime);
 
-        playerOne.checkCollisions(platforms);
         
         for(Platform p : platforms)
             p.draw(g2);    
@@ -156,7 +160,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         frame.setBackground(Color.WHITE);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH); 
         frame.setVisible(true);
-        System.out.println(frame.getInsets());
+
     }
 
     public static void main(String[] args) {
@@ -192,18 +196,18 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     public void managePlatformSpeed(ArrayList<Platform> platforms) {
         
         for(Platform p : platforms) {
-            // System.out.println(-1 * playerOne.getDy());
             p.setDy(-1 * playerOne.getDy());
-
-
-            if(left)
-                p.setDx(sidewaysVelocity);
-
-            if(right)
-                p.setDx(-sidewaysVelocity);
-            
-            if(!left && !right)
-                p.setDx(0);
+            p.setDx(-1 * playerOne.getDx());
         }
+    }
+
+    public void managePlayerHorizontalSpeed(Player player) {
+        if(left)
+            player.setDx(-sidewaysVelocity);
+        if(right)
+            player.setDx(sidewaysVelocity);
+        
+        if(!left && !right)
+            player.setDx(0);
     }
 }
