@@ -52,6 +52,10 @@ public class Player extends Sprite {
         isGrounded = false;
     }
 
+    public PlayerLite genPlayerLite(Platform p) {
+        return new PlayerLite((int) (x - p.getX()), (int) (y - p.getY()));
+    }
+
     public boolean findFloorCollision(ArrayList<Platform> platforms) {
         for(Platform p : platforms) {
             if(p.intersects(new Player((int) (x), (int) (y + height + 5), width, height)))

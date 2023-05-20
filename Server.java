@@ -1,12 +1,6 @@
-package InfoSwapServer;
-
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -20,6 +14,17 @@ public class Server {
     protected Socket clientSocket;
     protected DataInputStream in;
     protected DataOutputStream out;
+    private PlayerList players = new PlayerList();
+
+    public Server(int port) {
+        this.host = "localhost";
+        this.port = port;
+        
+        try {
+            serverSocket = new ServerSocket();
+            serverSocket.bind(new InetSocketAddress(host, port));
+        } catch (IOException e) {}
+    }
 
     public Server(String host, int port) {
         this.host = host;
@@ -37,7 +42,7 @@ public class Server {
             in = new DataInputStream(clientSocket.getInputStream());
             out = new DataOutputStream(clientSocket.getOutputStream());
 
-            Thread t = new ClientHandler(clientSocket, clientSocket.getInputStream(), clientSocket.getOutputStream());
+            Thread t = new ClientHandler(clientSocket, clientSocket.getInputStream(), clientSocket.getOutputStream(), players);
 
             t.start();
         } catch (IOException e) {

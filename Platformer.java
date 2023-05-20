@@ -11,6 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import java.awt.event.MouseMotionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.awt.event.MouseListener;
 
@@ -39,7 +40,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     private ArrayList<Platform> platforms = new ArrayList<Platform>();
 
-    private Player playerOne = new Player(PREF_W / 2, PREF_H / 2);
+    private Player player = new Player(PREF_W / 2, PREF_H / 2);
+    private PlayerList otherPlayers = new PlayerList();
+    private Client client = new Client("localhost", 5100);
 
 
     public Platformer()
@@ -49,13 +52,15 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         addMouseListener(this);
         setFocusable(true);
         requestFocus();
-
+        
+        client.startConnection();
         
         platforms.add(new Platform(0, PREF_H - 10, PREF_W, 200));
         platforms.add(new Platform(-100, 0, 100, PREF_H + 200));
         platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W / 2, 75));
         platforms.add(new Platform(0, PREF_H - 600, PREF_W / 2, 75));
         platforms.add(new Platform(PREF_W / 2, PREF_H - 900, PREF_W / 2, 75));
+
     }
     
     public Dimension getPreferredSize() {
@@ -73,24 +78,23 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         if(dtime >= 1 || dtime < 0)
         dtime = 1/FPSCap;
         
-        managePlayerHorizontalSpeed(playerOne);
-        playerOne.update(dtime);
+        managePlayerHorizontalSpeed(player);
+        player.update(dtime);
         
         managePlatformSpeed(platforms);
         for(Platform p : platforms)
         p.update(dtime);
         
-        playerOne.checkCollisions(platforms);
+        player.checkCollisions(platforms);
 
-        
-        g2.drawString("Dx: " + playerOne.getDx(), 10, 10);
-        g2.drawString("Dy: " + playerOne.getDy(), 10, 20);
-        
+        try {
+            otherPlayers = (PlayerList) client.sendObject(player.genPlayerLite(platforms.get(0)));
+        } catch (Exception e) { e.printStackTrace(); }
         
         for(Platform p : platforms)
             p.draw(g2);    
-        playerOne.draw(g2);
-
+        player.draw(g2);
+        drawOtherPlayers(g2);
 
         //keep this for program to work
         if (!unlimited)
@@ -127,7 +131,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     @Override
     public void keyPressed(KeyEvent e){
         if(e.getKeyCode() == KeyEvent.VK_UP)
-            playerOne.jump();
+            player.jump();
         for(int i : leftKeys)
             if(e.getKeyCode() == i)
                 left = true;
@@ -156,7 +160,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(gamePanel);
-        frame.setUndecorated(true);
+        // frame.setUndecorated(true);
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setBackground(Color.WHITE);
@@ -195,15 +199,15 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     @Override
     public void mouseExited(MouseEvent e) {}
 
-    public void managePlatformSpeed(ArrayList<Platform> platforms) {
+    private void managePlatformSpeed(ArrayList<Platform> platforms) {
         
         for(Platform p : platforms) {
-            p.setDy(-1 * playerOne.getDy());
-            p.setDx(-1 * playerOne.getDx());
+            p.setDy(-1 * player.getDy());
+            p.setDx(-1 * player.getDx());
         }
     }
 
-    public void managePlayerHorizontalSpeed(Player player) {
+    private void managePlayerHorizontalSpeed(Player player) {
         if(left)
             player.setDx(-sidewaysVelocity);
         if(right)
@@ -211,5 +215,11 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         
         if(!left && !right)
             player.setDx(0);
+    }
+
+    private void drawOtherPlayers(Graphics2D g2) {
+        for(PlayerLite p : otherPlayers.getPlayers()) {
+            p.draw(g2, platforms.get(0));
+        }
     }
 }
