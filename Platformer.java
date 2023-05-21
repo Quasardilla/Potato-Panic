@@ -32,7 +32,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private static double lastFPSCheck = 0;
     private static double currentFPS = 0;
 
-    private double sidewaysVelocity = 600;
+    private double sidewaysVelocity = 900;
 
     private boolean left, right;
     private int[] leftKeys = new int[] {KeyEvent.VK_LEFT, KeyEvent.VK_A};
@@ -56,8 +56,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         setFocusable(true);
         requestFocus();
         
-        platforms.add(new Platform(0, PREF_H - 10, PREF_W, 200));
-        platforms.add(new Platform(-100, 0, 100, PREF_H + 200));
+        platforms.add(new Platform(-PREF_W, PREF_H - 10, PREF_W * 3, 600));
+        platforms.add(new Platform(-PREF_W, -PREF_H, 100, PREF_H * 2));
+        platforms.add(new Platform((PREF_W * 2) - 100, -PREF_H, 100, PREF_H * 2));
         platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W / 2, 75));
         platforms.add(new Platform(0, PREF_H - 600, PREF_W / 2, 75));
         platforms.add(new Platform(PREF_W / 2, PREF_H - 900, PREF_W / 2, 75));

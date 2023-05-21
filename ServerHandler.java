@@ -25,6 +25,9 @@ class ServerHandler extends Thread
 
 	private int ping;
 
+    private long t1;
+    private long t2;    
+
 	// Constructor
 	public ServerHandler(Socket socket, ObjectInputStream in, ObjectOutputStream out, Player player, PlayerList players, Platform originPlatform)
 	{
@@ -60,21 +63,22 @@ class ServerHandler extends Thread
                 totalFrames = 0;
             }
 
-            long t1 = System.currentTimeMillis();
-
+            t1 = System.currentTimeMillis();
+            
             try {	
                 sendObject(player.genPlayerLite(platform));
                 players = (PlayerList) readObject();
             } catch (SocketException e) {
-                System.out.println("Client Disconnected");
+                System.out.println("Server Disconnected");
                 try {
                     socket.close();
                 } catch (IOException e1) { e1.printStackTrace(); }
             } catch (Exception e) { e.printStackTrace(); }
             
-            long t2 = System.currentTimeMillis();
+            t2 = System.currentTimeMillis();
 
             ping = (int) (t2 - t1);
+            System.out.println("Ping: " + ping + "ms");
 
 		}
 		

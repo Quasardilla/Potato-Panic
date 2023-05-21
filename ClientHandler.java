@@ -22,6 +22,10 @@ class ClientHandler extends Thread
     private static double lastFPSCheck = 0;
     private static double currentFPS = 0;
 
+	private long t1 = 0;
+	private long t2 = 0;
+	private long t3 = 0;
+
 	// Constructor
 	public ClientHandler(Socket socket, InputStream in, OutputStream out, PlayerList players)
 	{
@@ -55,22 +59,31 @@ class ClientHandler extends Thread
 		while (!socket.isClosed())
 		{
 
-			// totalFrames++;
-            // if (System.nanoTime() > lastFPSCheck + 1000000000)
-            // {
-            //     lastFPSCheck = System.nanoTime();
-            //     currentFPS = totalFrames;
-            //     totalFrames = 0;
-            // }
-            // System.out.println(currentFPS);
+			totalFrames++;
+            if (System.nanoTime() > lastFPSCheck + 1000000000)
+            {
+                lastFPSCheck = System.nanoTime();
+                currentFPS = totalFrames;
+                totalFrames = 0;
+				// System.out.println(currentFPS);
+            }
 
 			try {
 				// receive the answer from client
-				player = in.readObject();
-				// System.out.println(player);
-				players.setPlayer(playerNum, (PlayerLite) player);
-				out.writeObject(players.getOtherPlayers(playerNum));
+
+				t1 = System.currentTimeMillis();
+				
 				out.reset();
+				out.writeObject(players.getOtherPlayers(playerNum));
+				
+				player = in.readObject();
+				System.out.println(player);
+				players.setPlayer(playerNum, (PlayerLite) player);
+				
+				t2 = System.currentTimeMillis();
+				// System.out.println(t2 - t1);
+				// System.out.println(player);
+
 			} catch (SocketException e) {
 				System.out.println("Client Disconnected");
 				players.removePlayer(playerNum);
