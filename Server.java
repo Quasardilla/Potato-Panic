@@ -1,6 +1,12 @@
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -12,8 +18,8 @@ public class Server {
 
     protected ServerSocket serverSocket;
     protected Socket clientSocket;
-    protected DataInputStream in;
-    protected DataOutputStream out;
+    protected InputStream in;
+    protected OutputStream out;
     private PlayerList players = new PlayerList();
 
     public Server(int port) {
@@ -39,34 +45,12 @@ public class Server {
     public void listenForClient() {
         try {
             clientSocket = serverSocket.accept();
-            in = new DataInputStream(clientSocket.getInputStream());
-            out = new DataOutputStream(clientSocket.getOutputStream());
+            out = clientSocket.getOutputStream();
+            in = clientSocket.getInputStream();
 
-            Thread t = new ClientHandler(clientSocket, clientSocket.getInputStream(), clientSocket.getOutputStream(), players);
+            Thread t = new ClientHandler(clientSocket, in, out, players);
 
             t.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public String listenForInput() throws IOException {
-        String input = "";
-        try {
-            input = in.readUTF();
-        } catch (SocketException e) {
-            System.out.println("Client Disconnected");
-            stop();
-            return "LOST CONNECTION";
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return input;
-    }
-
-    public void send(String msg) {
-        try {
-            out.writeUTF(msg);
         } catch (IOException e) {
             e.printStackTrace();
         }

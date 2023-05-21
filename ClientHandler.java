@@ -1,3 +1,5 @@
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -16,14 +18,17 @@ class ClientHandler extends Thread
 	protected int playerNum;
 	protected static int playerCount = 0;
 	
+	private static double totalFrames = 0;
+    private static double lastFPSCheck = 0;
+    private static double currentFPS = 0;
 
 	// Constructor
 	public ClientHandler(Socket socket, InputStream in, OutputStream out, PlayerList players)
 	{
 		this.socket = socket;
 		try {
-			this.in = new ObjectInputStream(in);
-			this.out = new ObjectOutputStream(out);
+            this.in = new ObjectInputStream(in);
+            this.out = new ObjectOutputStream(out);
 		} catch (IOException e) {}
 		this.players = players;
 
@@ -37,9 +42,8 @@ class ClientHandler extends Thread
 		try {	
 			// receive the answer from client
 			player = in.readObject();
-			System.out.println(player);
 			players.addPlayer((PlayerLite) player);
-			System.out.println("Player Added");
+			System.out.println("Client Connected");
 			out.writeObject(players.getOtherPlayers(playerNum));
 		} catch (SocketException e) {
 			System.out.println("Client Disconnected");
@@ -50,13 +54,23 @@ class ClientHandler extends Thread
 
 		while (!socket.isClosed())
 		{
-			
+
+			// totalFrames++;
+            // if (System.nanoTime() > lastFPSCheck + 1000000000)
+            // {
+            //     lastFPSCheck = System.nanoTime();
+            //     currentFPS = totalFrames;
+            //     totalFrames = 0;
+            // }
+            // System.out.println(currentFPS);
+
 			try {
 				// receive the answer from client
 				player = in.readObject();
 				// System.out.println(player);
 				players.setPlayer(playerNum, (PlayerLite) player);
 				out.writeObject(players.getOtherPlayers(playerNum));
+				out.reset();
 			} catch (SocketException e) {
 				System.out.println("Client Disconnected");
 				players.removePlayer(playerNum);

@@ -1,3 +1,5 @@
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -21,14 +23,20 @@ public class Client {
             clientSocket = new Socket(ip, port);
             out = new ObjectOutputStream(clientSocket.getOutputStream());
             in = new ObjectInputStream(clientSocket.getInputStream());
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     public Object sendObject(Object obj) throws IOException, ClassNotFoundException {
+        long t1 = System.currentTimeMillis();
         out.writeObject(obj);
+        out.reset();
         Object resp = in.readObject();
+        long t2 = System.currentTimeMillis();
+        System.out.println("Ping (ms): " + (t2 - t1));
         return resp;
     }
 
@@ -37,5 +45,17 @@ public class Client {
         out.close();
         
         clientSocket.close();
+    }
+
+    public ObjectInputStream getIn() {
+        return in;
+    }
+
+    public ObjectOutputStream getOut() {
+        return out;
+    }
+
+    public Socket getClientSocket() {
+        return clientSocket;
     }
 }

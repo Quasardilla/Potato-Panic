@@ -42,7 +42,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     private Player player = new Player(PREF_W / 2, PREF_H / 2);
     private PlayerList otherPlayers = new PlayerList();
-    private Client client = new Client("localhost", 5100);
+    private Client client = new Client("rottinger.net", 5100);
+    // private Client client = new Client("192.168.201.47", 5100);
+    private ServerHandler t;
+// 
 
 
     public Platformer()
@@ -53,14 +56,17 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         setFocusable(true);
         requestFocus();
         
-        client.startConnection();
-        
         platforms.add(new Platform(0, PREF_H - 10, PREF_W, 200));
         platforms.add(new Platform(-100, 0, 100, PREF_H + 200));
         platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W / 2, 75));
         platforms.add(new Platform(0, PREF_H - 600, PREF_W / 2, 75));
         platforms.add(new Platform(PREF_W / 2, PREF_H - 900, PREF_W / 2, 75));
 
+        client.startConnection();
+        t = new ServerHandler(client.getClientSocket(), client.getIn(), client.getOut(), player, otherPlayers, platforms.get(0));
+
+        System.out.println("running thread");
+        t.start();
     }
     
     public Dimension getPreferredSize() {
@@ -86,15 +92,15 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         p.update(dtime);
         
         player.checkCollisions(platforms);
-
-        try {
-            otherPlayers = (PlayerList) client.sendObject(player.genPlayerLite(platforms.get(0)));
-        } catch (Exception e) { e.printStackTrace(); }
         
         for(Platform p : platforms)
             p.draw(g2);    
         player.draw(g2);
         drawOtherPlayers(g2);
+
+        g2.drawString("FPS: " + currentFPS, 10, 20);
+        g2.drawString("PPS: " + t.getPPS(), 10, 40);
+        g2.drawString("Ping: " + t.getPing(), 10, 60);
 
         //keep this for program to work
         if (!unlimited)
@@ -218,6 +224,8 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     }
 
     private void drawOtherPlayers(Graphics2D g2) {
+        otherPlayers = t.getPlayers();
+
         for(PlayerLite p : otherPlayers.getPlayers()) {
             p.draw(g2, platforms.get(0));
         }
