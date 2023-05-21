@@ -56,9 +56,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         setFocusable(true);
         requestFocus();
         
-        platforms.add(new Platform(-PREF_W, PREF_H - 10, PREF_W * 3, 600));
-        platforms.add(new Platform(-PREF_W, -PREF_H, 100, PREF_H * 2));
-        platforms.add(new Platform((PREF_W * 2) - 100, -PREF_H, 100, PREF_H * 2));
+        platforms.add(new Platform(-3000, 1000, 8000, 600));
+        platforms.add(new Platform(-3000, -1000, 1200, 2000));
+        platforms.add(new Platform(4000 - 200, -1000, 1200, 2000));
+        platforms.add(new Platform(-3000, -1600, 8000, 600));
         platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W / 2, 75));
         platforms.add(new Platform(0, PREF_H - 600, PREF_W / 2, 75));
         platforms.add(new Platform(PREF_W / 2, PREF_H - 900, PREF_W / 2, 75));

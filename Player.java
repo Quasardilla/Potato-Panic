@@ -6,6 +6,7 @@ import javax.swing.ImageIcon;
 public class Player extends Sprite {
 
     private double gravity = 2800, velocity = -1400;
+    private int jumpCount = 0;
     protected boolean isJumping = true, isGrounded, wallSliding;
 
     public Player() {
@@ -45,8 +46,10 @@ public class Player extends Sprite {
     }
 
     public void jump() {
-        // if(!isGrounded)
-        //     return;
+        if(jumpCount > 1)
+            return;
+        
+        jumpCount++;
         super.dy = velocity;
         isJumping = true;
         isGrounded = false;
@@ -91,12 +94,14 @@ public class Player extends Sprite {
                         // System.out.println("hit top of other sprite");
                         isJumping = false;
                         isGrounded = true;
+                        jumpCount = 0;
                         dy = 0;
                         adjustPlatforms(platforms, 0, y - (p.getY() - height));
                         break;
                     case 2: //left
                         // System.out.println("hit left of other sprite"); 
                         dx = 0;
+                        jumpCount = 1;
                         wallSliding = true;
                         adjustPlatforms(platforms, x - (p.getX() + p.getWidth()), 0);
                         break;
@@ -104,6 +109,7 @@ public class Player extends Sprite {
                         // System.out.println("hit right of other sprite");
                         dx = 0;
                         wallSliding = true;
+                        jumpCount = 1;
                         adjustPlatforms(platforms, x - (p.getX() - width), 0);
                         break;
                     case 4: //bottom
