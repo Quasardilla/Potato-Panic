@@ -7,8 +7,8 @@ import java.net.Socket;
 
 public class Client {
     private static Socket clientSocket;
-    protected static ObjectInputStream in;
-	protected static ObjectOutputStream out;
+    protected static BufferedInputStream in;
+	protected static BufferedOutputStream out;
     protected String ip;
     protected int port;
 
@@ -21,23 +21,13 @@ public class Client {
     public void startConnection() {
         try {
             clientSocket = new Socket(ip, port);
-            out = new ObjectOutputStream(clientSocket.getOutputStream());
-            in = new ObjectInputStream(clientSocket.getInputStream());
+            out = new BufferedOutputStream(clientSocket.getOutputStream());
+            in = new BufferedInputStream(clientSocket.getInputStream());
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-    }
-
-    public Object sendObject(Object obj) throws IOException, ClassNotFoundException {
-        long t1 = System.currentTimeMillis();
-        out.writeObject(obj);
-        out.reset();
-        Object resp = in.readObject();
-        long t2 = System.currentTimeMillis();
-        System.out.println("Ping (ms): " + (t2 - t1));
-        return resp;
     }
 
     public void stopConnection() throws IOException {
@@ -47,11 +37,11 @@ public class Client {
         clientSocket.close();
     }
 
-    public ObjectInputStream getIn() {
+    public BufferedInputStream getIn() {
         return in;
     }
 
-    public ObjectOutputStream getOut() {
+    public BufferedOutputStream getOut() {
         return out;
     }
 

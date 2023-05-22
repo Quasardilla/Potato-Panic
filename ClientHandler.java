@@ -5,16 +5,18 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 
 class ClientHandler extends Thread
 {
-	protected ObjectInputStream in;
-	protected ObjectOutputStream out;
+	protected BufferedInputStream in;
+	protected BufferedOutputStream out;
 	protected final Socket socket;
     protected PlayerList players;
-	Object player;	
+	protected PlayerLite player;	
 	protected int playerNum;
 	protected static int playerCount = 0;
 	
@@ -30,10 +32,8 @@ class ClientHandler extends Thread
 	public ClientHandler(Socket socket, InputStream in, OutputStream out, PlayerList players)
 	{
 		this.socket = socket;
-		try {
-            this.in = new ObjectInputStream(in);
-            this.out = new ObjectOutputStream(out);
-		} catch (IOException e) {}
+		this.in = new BufferedInputStream(in);
+		this.out = new BufferedOutputStream(out);
 		this.players = players;
 
 		playerNum = playerCount;
@@ -45,10 +45,15 @@ class ClientHandler extends Thread
 	{
 		try {	
 			// receive the answer from client
-			player = in.readObject();
-			players.addPlayer((PlayerLite) player);
+
+			player = readPlayer();
+			players.addPlayer(player);
+
 			System.out.println("Client Connected");
-			out.writeObject(players.getOtherPlayers(playerNum));
+
+			ArrayList<PlayerLite> otherPlayers = players.getOtherPlayers(playerNum).getPlayers();
+			sendOtherPlayers(otherPlayers);
+				
 		} catch (SocketException e) {
 			System.out.println("Client Disconnected");
 			try {
@@ -58,6 +63,10 @@ class ClientHandler extends Thread
 
 		while (!socket.isClosed())
 		{
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) { e.printStackTrace(); }
+
 
 			totalFrames++;
             if (System.nanoTime() > lastFPSCheck + 1000000000)
@@ -72,15 +81,15 @@ class ClientHandler extends Thread
 				// receive the answer from client
 
 				t1 = System.currentTimeMillis();
+
+				ArrayList<PlayerLite> otherPlayers = players.getOtherPlayers(playerNum).getPlayers();
+				sendOtherPlayers(otherPlayers);
 				
-				out.reset();
-				out.writeObject(players.getOtherPlayers(playerNum));
-				
-				player = in.readObject();
-				System.out.println(player);
-				players.setPlayer(playerNum, (PlayerLite) player);
+				player = readPlayer();
+				players.setPlayer(playerNum, player);
 				
 				t2 = System.currentTimeMillis();
+
 				// System.out.println(t2 - t1);
 				// System.out.println(player);
 
@@ -105,4 +114,47 @@ class ClientHandler extends Thread
 		}
 
 	}
+
+	public PlayerLite readPlayer() throws IOException, ClassNotFoundException
+	{
+		
+		byte[] x = new byte[4];
+		byte[] y = new byte[4];
+		in.read(x);
+		in.read(y);
+		int playerX = toInt(x);
+		int playerY = toInt(y);
+
+		System.out.println(playerX + ", " + playerY);
+
+		return new PlayerLite(playerX, playerY);
+	}
+
+	private void sendOtherPlayers(ArrayList<PlayerLite> otherPlayers) throws IOException {
+		out.write(otherPlayers.size());
+		for(int i = 0; i < otherPlayers.size(); i++)
+		{
+			PlayerLite otherPlayer = otherPlayers.get(i);
+			out.write(toByteArray(otherPlayer.x));
+			out.write(toByteArray(otherPlayer.y));
+		}
+		out.flush();
+	}
+
+	public static byte[] toByteArray(int value) {
+        return new byte[] {
+                (byte)(value >> 24),
+                (byte)(value >> 16),
+                (byte)(value >> 8),
+                (byte)value};
+    }
+
+    public static int toInt(byte[] bytes) {
+        int value = 0;
+        for (byte b : bytes) {
+            value = (value << 8) + (b & 0xFF);
+        }
+
+        return value;
+    }
 }

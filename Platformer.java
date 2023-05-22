@@ -42,7 +42,8 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     private Player player = new Player(PREF_W / 2, PREF_H / 2);
     private PlayerList otherPlayers = new PlayerList();
-    private Client client = new Client("rottinger.net", 5100);
+    private Client client = new Client("rottinger.net", 5101);
+    // private Client client = new Client("192.168.201.218", 5101);
     // private Client client = new Client("192.168.201.47", 5100);
     private ServerHandler t;
 // 
@@ -227,7 +228,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     private void drawOtherPlayers(Graphics2D g2) {
         otherPlayers = t.getPlayers();
-
+        
         for(PlayerLite p : otherPlayers.getPlayers()) {
             p.draw(g2, platforms.get(0));
         }
