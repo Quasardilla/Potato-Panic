@@ -56,6 +56,7 @@ public class Player extends Sprite {
     }
 
     public PlayerLite genPlayerLite(Platform p) {
+        // System.out.println("genPlayerLite: " + (int) (x - p.getX()) + ", " + (int) (y - p.getY()));
         return new PlayerLite((int) (x - p.getX()), (int) (y - p.getY()));
     }
 

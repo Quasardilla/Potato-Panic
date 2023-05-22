@@ -16,7 +16,10 @@ public class PlayerLite implements Serializable{
     public void draw(Graphics2D g2, Platform p) {
 
         g2.setColor(java.awt.Color.RED);
-        // g2.fillRect(x, y, 50, 50);
+
+        // System.out.println("platform: " + p.getX() + ", " + p.getY());
+        // System.out.println((int) p.getX() + x + ", " + (int) p.getY() + y);
+        g2.fillRect(x, y, 50, 50);
         g2.fillRect((int) p.getX() + x, (int) p.getY() + y, 50, 50);
     }
 
