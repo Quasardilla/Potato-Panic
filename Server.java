@@ -11,6 +11,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 
 public class Server {
     protected String host;
@@ -20,7 +21,10 @@ public class Server {
     protected Socket clientSocket;
     protected InputStream in;
     protected OutputStream out;
-    private PlayerList players = new PlayerList();
+    protected ArrayList<BufferedOutputStream> outputStreams = new ArrayList<BufferedOutputStream>();
+    protected ArrayList<ClientHandler> clientHandlers = new ArrayList<ClientHandler>();
+    private SharedPlayers players = new SharedPlayers();
+    private MasterClientHandler sharedThread = new MasterClientHandler(outputStreams, clientHandlers, players);
 
     public Server(int port) {
         this.host = "localhost";
@@ -30,6 +34,7 @@ public class Server {
             serverSocket = new ServerSocket();
             serverSocket.bind(new InetSocketAddress(host, port));
         } catch (IOException e) {}
+        sharedThread.start();
     }
 
     public Server(String host, int port) {
@@ -40,15 +45,18 @@ public class Server {
             serverSocket = new ServerSocket();
             serverSocket.bind(new InetSocketAddress(host, port));
         } catch (IOException e) {}
+        sharedThread.start();
     }
 
     public void listenForClient() {
         try {
             clientSocket = serverSocket.accept();
             out = clientSocket.getOutputStream();
+            outputStreams.add(new BufferedOutputStream(out));
             in = clientSocket.getInputStream();
 
-            Thread t = new ClientHandler(clientSocket, in, out, players);
+            ClientHandler t = new ClientHandler(clientSocket, in, out, sharedThread, players);
+            clientHandlers.add(t);
 
             t.start();
         } catch (IOException e) {

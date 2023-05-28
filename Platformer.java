@@ -41,7 +41,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private ArrayList<Platform> platforms = new ArrayList<Platform>();
 
     private Player player = new Player(PREF_W / 2, PREF_H / 2);
-    private PlayerList otherPlayers = new PlayerList();
+    private PlayerInfo playerInfo = new PlayerInfo("Quasar", Color.BLUE);
+    private ArrayList<PlayerLite> otherPlayers = new ArrayList<PlayerLite>();
+    private ArrayList<PlayerInfo> otherPlayerInfos = new ArrayList<PlayerInfo>();
     private Client client = new Client("rottinger.net", 5101);
     // private Client client = new Client("192.168.201.218", 5101);
     // private Client client = new Client("192.168.201.47", 5100);
@@ -66,7 +68,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         platforms.add(new Platform(PREF_W / 2, PREF_H - 900, PREF_W / 2, 75));
 
         client.startConnection();
-        t = new ServerHandler(client.getClientSocket(), client.getIn(), client.getOut(), player, otherPlayers, platforms.get(0));
+        t = new ServerHandler(client.getClientSocket(), client.getIn(), client.getOut(), player, playerInfo, platforms.get(0));
 
         System.out.println("running thread");
         t.start();
@@ -83,23 +85,26 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHints(hints);
 
-        double dtime = 1/currentFPS;
-        if(dtime >= 1 || dtime < 0)
-        dtime = 1/FPSCap;
-        
-        managePlayerHorizontalSpeed(player);
-        player.update(dtime);
-        
-        managePlatformSpeed(platforms);
-        for(Platform p : platforms)
-        p.update(dtime);
-        
-        player.checkCollisions(platforms);
-        
-        for(Platform p : platforms)
-            p.draw(g2);    
-        player.draw(g2);
-        drawOtherPlayers(g2);
+
+        if(t.getGameStarted()) {
+            double dtime = 1/currentFPS;
+            if(dtime >= 1 || dtime < 0)
+            dtime = 1/FPSCap;
+            
+            managePlayerHorizontalSpeed(player);
+            player.update(dtime);
+            
+            managePlatformSpeed(platforms);
+            for(Platform p : platforms)
+            p.update(dtime);
+            
+            player.checkCollisions(platforms);
+            
+            for(Platform p : platforms)
+                p.draw(g2);    
+            player.draw(g2);
+            drawOtherPlayers(g2);
+        }
 
         g2.drawString("FPS: " + currentFPS, 10, 20);
         g2.drawString("PPS: " + t.getPPS(), 10, 40);
@@ -141,6 +146,12 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     public void keyPressed(KeyEvent e){
         if(e.getKeyCode() == KeyEvent.VK_UP)
             player.jump();
+        if(e.getKeyCode() == KeyEvent.VK_S)
+            try {
+                t.sendStartGame();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         for(int i : leftKeys)
             if(e.getKeyCode() == i)
                 left = true;
@@ -228,9 +239,12 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     private void drawOtherPlayers(Graphics2D g2) {
         otherPlayers = t.getPlayers();
-        
-        for(PlayerLite p : otherPlayers.getPlayers()) {
-            p.draw(g2, platforms.get(0));
+        otherPlayerInfos = t.getPlayerInfos();
+
+        if(otherPlayers.size() != otherPlayerInfos.size() || otherPlayers.size() == 0)
+            return;
+        for(int i = 0; i < otherPlayers.size(); i++) {
+            otherPlayers.get(i).draw(g2, platforms.get(0), otherPlayerInfos.get(i));
         }
     }
 }

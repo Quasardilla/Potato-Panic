@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -5,6 +6,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.net.SocketException;
@@ -14,147 +16,196 @@ class ClientHandler extends Thread
 {
 	protected BufferedInputStream in;
 	protected BufferedOutputStream out;
+	protected MasterClientHandler sharedThread;
 	protected final Socket socket;
-    protected PlayerList players;
+    protected SharedPlayers players;
 	protected PlayerLite player;	
 	protected int playerNum;
 	protected static int playerCount = 0;
-	
-	private static double totalFrames = 0;
-    private static double lastFPSCheck = 0;
-    private static double currentFPS = 0;
-
-	private long t1 = 0;
-	private long t2 = 0;
-	private long t3 = 0;
+	protected int acknowledgedPlayers = 0;
 
 	// Constructor
-	public ClientHandler(Socket socket, InputStream in, OutputStream out, PlayerList players)
+	public ClientHandler(Socket socket, InputStream in, OutputStream out, MasterClientHandler sharedThread, SharedPlayers players)
 	{
 		this.socket = socket;
 		this.in = new BufferedInputStream(in);
 		this.out = new BufferedOutputStream(out);
+		this.sharedThread = sharedThread;
 		this.players = players;
 
 		playerNum = playerCount;
+		acknowledgedPlayers = playerNum;
         playerCount++;
 	}
 
+
+    /** 
+     *  <pre>     
+     *Message Types: 
+     *  0x00 - Player Join (For server, playerInfo like name, color, etc.)
+     *  0x01 - Player Leaves (For client, player index of who left)
+     *  0x02 - PlayerLite Info (For server, player position)
+     *  0x03 - PlayerInfo (For client, names, colors, etc.)
+     *  0x04 - PlayerList Info (For client, all players but current player)
+     *  0x05 - Start Game (For server, which will then send 0x05 to all clients, along with unix time stamp of when game started)
+     *  0x06 - End Game (For clients)
+     *  0x07 - Potato switches to new player (For client, player index of who is now holding potato)
+     *  0x08 - Potato explodes (For client, playerLite of who exploded, and unix time stamp of when the game will start again)
+     *  </pre>
+     */
 	@Override
 	public void run()
 	{
-		try {	
-			// receive the answer from client
-
-			player = readPlayer();
-			players.addPlayer(player);
-
-			System.out.println("Client Connected");
-
-			ArrayList<PlayerLite> otherPlayers = players.getOtherPlayers(playerNum).getPlayers();
-			sendOtherPlayers(otherPlayers);
-				
-		} catch (SocketException e) {
-			System.out.println("Client Disconnected");
-			try {
-				socket.close();
-			} catch (IOException e1) { e1.printStackTrace(); }
-		} catch (Exception e) { e.printStackTrace(); }
+		System.out.println("Player " + playerNum + " Connected");
 
 		while (!socket.isClosed())
 		{
 			try {
 				Thread.sleep(10);
 			} catch (InterruptedException e) { e.printStackTrace(); }
-
-
-			totalFrames++;
-            if (System.nanoTime() > lastFPSCheck + 1000000000)
-            {
-                lastFPSCheck = System.nanoTime();
-                currentFPS = totalFrames;
-                totalFrames = 0;
-				// System.out.println(currentFPS);
-            }
-
+			
 			try {
-				// receive the answer from client
-
-				t1 = System.currentTimeMillis();
-
-				ArrayList<PlayerLite> otherPlayers = players.getOtherPlayers(playerNum).getPlayers();
-				sendOtherPlayers(otherPlayers);
-				
-				player = readPlayer();
-				players.setPlayer(playerNum, player);
-				
-				t2 = System.currentTimeMillis();
-
-				// System.out.println(t2 - t1);
-				// System.out.println(player);
-
+				byte type = (byte) in.read();
+                switch(type) {
+                    case 0x00:
+                        players.addPlayer(readPlayerInfo()); 
+						if(players.getGameStarted()) {
+							players.eliminatePlayer(playerNum);
+						}
+						sharedThread.playerJoined();
+                        break;
+                    case 0x02:
+						players.setPlayer(playerNum, readPlayer());
+						sendOtherPlayers(players.getOtherPlayers(playerNum));
+                        break;
+                    case 0x05:
+                        sharedThread.startGame();
+                        break;
+                    default:
+                        System.err.println("An invalid message was recieved from player " + playerNum + ".");
+						sharedThread.playerDisconnected(players.getPlayerIndicies().get(playerNum));
+                        close();
+                        break;
+                }
 			} catch (SocketException e) {
-				System.out.println("Client Disconnected");
-				players.removePlayer(playerNum);
 				try {
-					socket.close();
-				} catch (IOException e1) { e1.printStackTrace(); }
-				break;
+					sharedThread.playerDisconnected(players.getPlayerIndicies().get(playerNum));
+				} catch (IOException e1) {}
+				close();
 			} catch (Exception e) { e.printStackTrace(); }
-	
-		}
-		
-		try
-		{
-			// closing resources
-			this.in.close();
-			this.out.close();
-		} catch(IOException e){
-			e.printStackTrace();
 		}
 
 	}
 
+	private void close() {
+        try {
+            socket.close();
+            this.in.close();
+            this.out.close();
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
 	public PlayerLite readPlayer() throws IOException, ClassNotFoundException
 	{
-		
 		byte[] x = new byte[4];
 		byte[] y = new byte[4];
 		in.read(x);
 		in.read(y);
-		int playerX = toInt(x);
-		int playerY = toInt(y);
-
-		System.out.println(playerX + ", " + playerY);
+		int playerX = MasterClientHandler.toInt(x);
+		int playerY = MasterClientHandler.toInt(y);
 
 		return new PlayerLite(playerX, playerY);
 	}
 
+	public PlayerInfo readPlayerInfo() throws IOException, ClassNotFoundException
+	{
+		int size = in.read();
+		String name = "";
+
+		for(int i = 0; i < size; i++)
+		{
+			name += (char)in.read();
+		}
+
+		
+		int R = in.read();
+		int G = in.read();
+		int B = in.read();
+		Color color = new Color(R, G, B);
+		System.out.println(name + ", " + color);
+		return new PlayerInfo(name, color);
+	}
+
 	private void sendOtherPlayers(ArrayList<PlayerLite> otherPlayers) throws IOException {
+
+		out.write(0x04);
 		out.write(otherPlayers.size());
 		for(int i = 0; i < otherPlayers.size(); i++)
 		{
 			PlayerLite otherPlayer = otherPlayers.get(i);
-			out.write(toByteArray(otherPlayer.x));
-			out.write(toByteArray(otherPlayer.y));
+			out.write(MasterClientHandler.toByteArray(otherPlayer.x));
+			out.write(MasterClientHandler.toByteArray(otherPlayer.y));
 		}
 		out.flush();
 	}
 
-	public static byte[] toByteArray(int value) {
-        return new byte[] {
-                (byte)(value >> 24),
-                (byte)(value >> 16),
-                (byte)(value >> 8),
-                (byte)value};
-    }
+	public void sendOtherPlayerInfos() throws IOException {
+		ArrayList<PlayerInfo> otherPlayers = players.getOtherPlayerInfos(playerNum);
 
-    public static int toInt(byte[] bytes) {
-        int value = 0;
-        for (byte b : bytes) {
-            value = (value << 8) + (b & 0xFF);
-        }
+		out.write(0x03);
+		out.write(otherPlayers.size());
+		for(int i = 0; i < otherPlayers.size(); i++)
+		{
+			PlayerInfo otherPlayer = otherPlayers.get(i);
+			out.write(otherPlayer.name.length());
+			out.write(MasterClientHandler.toByteArray(otherPlayer.name));
+			out.write(MasterClientHandler.toByteArray(otherPlayer.color));
+		}
+		out.flush();
+	}
 
-        return value;
-    }
+	public void sendDisconnectedPlayer(int playerNum) throws IOException {
+		int otherIndex = players.getPlayerIndicies().get(playerNum);
+		int thisIndex = players.getPlayerIndicies().get(this.playerNum);
+		if(otherIndex < thisIndex) {
+			thisIndex--;
+		}
+		out.write(0x01);
+		out.write(thisIndex);
+		out.flush();
+	}
+
+	public void sendPotatoSwitched(int playerNum) throws IOException {
+		int otherIndex = players.getPlayerIndicies().get(playerNum);
+		int thisIndex = players.getPlayerIndicies().get(this.playerNum);
+		if(otherIndex < thisIndex) {
+			thisIndex--;
+		}
+		if(otherIndex == thisIndex)
+			thisIndex = 255;
+		out.write(0x07);
+		out.write(thisIndex);
+		out.flush();
+	}
+
+	public void sendPotatoExploded(int playerNum) throws IOException {
+		int otherIndex = players.getPlayerIndicies().get(playerNum);
+		int thisIndex = players.getPlayerIndicies().get(this.playerNum);
+
+		// System.out.println(players.playerHoldingBomb);
+		// System.out.println(otherIndex);
+		// System.out.println(thisIndex);
+
+		players.eliminatePlayer(playerNum);
+
+		if(otherIndex < thisIndex) {
+			thisIndex--;
+		}
+		if(otherIndex == thisIndex)
+			thisIndex = 255; 
+
+		out.write(0x08);
+		out.write(thisIndex);
+		out.flush();
+	}
 }
