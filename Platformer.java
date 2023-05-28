@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -7,13 +8,20 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.FontMetrics;
+
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseListener;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import java.awt.event.MouseMotionListener;
+
+import Font.EasyFontInstaller;
+
 import java.io.IOException;
+
 import java.util.ArrayList;
-import java.awt.event.MouseListener;
 
 public class Platformer extends JPanel implements KeyListener, MouseMotionListener, MouseListener
 {
@@ -25,8 +33,6 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     
     private static int FPSCap = 60;
-    // private static int FPSCap = 120;
-    // private static int FPSCap = 5;
     private static boolean unlimited = false;
     private static double totalFrames = 0;
     private static double lastFPSCheck = 0;
@@ -37,8 +43,14 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private boolean left, right;
     private int[] leftKeys = new int[] {KeyEvent.VK_LEFT, KeyEvent.VK_A};
     private int[] rightKeys = new int[] {KeyEvent.VK_RIGHT, KeyEvent.VK_D};
+    private int[] jumpKeys = new int[] {KeyEvent.VK_UP, KeyEvent.VK_W};
 
+    private Font font = new Font("Mochiy Pop P One", Font.PLAIN, 32);
+    private FontMetrics metrics;
+    
     private ArrayList<Platform> platforms = new ArrayList<Platform>();
+
+    private boolean debug = true, titleScreen = true, serverScreen, connectingScreen, waitingInGame, inGame, pausedScreen;
 
     private Player player = new Player(PREF_W / 2, PREF_H / 2);
     private PlayerInfo playerInfo = new PlayerInfo("Quasar", Color.BLUE);
@@ -69,9 +81,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
         client.startConnection();
         t = new ServerHandler(client.getClientSocket(), client.getIn(), client.getOut(), player, playerInfo, platforms.get(0));
+        EasyFontInstaller.installFont();
+        metrics = new FontMetrics(font) {};
 
-        System.out.println("running thread");
-        t.start();
     }
     
     public Dimension getPreferredSize() {
@@ -84,6 +96,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHints(hints);
+        metrics = g2.getFontMetrics();
 
 
         if(t.getGameStarted()) {
@@ -106,9 +119,36 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             drawOtherPlayers(g2);
         }
 
-        g2.drawString("FPS: " + currentFPS, 10, 20);
-        g2.drawString("PPS: " + t.getPPS(), 10, 40);
-        g2.drawString("Ping: " + t.getPing(), 10, 60);
+        if(inGame) {
+            double dtime = 1/currentFPS;
+            if(dtime >= 1 || dtime < 0)
+            dtime = 1/FPSCap;
+            
+            managePlayerHorizontalSpeed(player);
+            player.update(dtime);
+            
+            managePlatformSpeed(platforms);
+            for(Platform p : platforms)
+            p.update(dtime);
+            
+            player.checkCollisions(platforms);
+            
+            for(Platform p : platforms)
+                p.draw(g2);    
+            player.draw(g2);
+            drawOtherPlayers(g2);
+        }
+
+        if(debug) {
+            font = new Font(font.getName(), Font.PLAIN, 12);
+            g2.setFont(font);
+
+            g2.drawString("FPS: " + currentFPS, 10, 20);
+            if(t != null) {
+                g2.drawString("PPS: " + t.getPPS(), 10, 40);
+                g2.drawString("Ping: " + t.getPing(), 10, 60);
+            }
+        }
 
         //keep this for program to work
         if (!unlimited)
@@ -144,14 +184,15 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     @Override
     public void keyPressed(KeyEvent e){
-        if(e.getKeyCode() == KeyEvent.VK_UP)
-            player.jump();
         if(e.getKeyCode() == KeyEvent.VK_S)
             try {
                 t.sendStartGame();
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
+        for(int i : jumpKeys)
+            if(e.getKeyCode() == i)
+                player.jump();
         for(int i : leftKeys)
             if(e.getKeyCode() == i)
                 left = true;
@@ -176,7 +217,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     private static void createAndShowGUI() {
         Platformer gamePanel = new Platformer();
-        JFrame frame = new JFrame("My Frame");
+        JFrame frame = new JFrame("Potato Panic");
         
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(gamePanel);
