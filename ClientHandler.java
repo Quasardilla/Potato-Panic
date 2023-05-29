@@ -50,7 +50,8 @@ class ClientHandler extends Thread
      *  0x05 - Start Game (For server, which will then send 0x05 to all clients, along with unix time stamp of when game started)
      *  0x06 - End Game (For clients)
      *  0x07 - Potato switches to new player (For client, player index of who is now holding potato)
-     *  0x08 - Potato explodes (For client, playerLite of who exploded, and unix time stamp of when the game will start again)
+     *  0x08 - Potato explodes (For client, player index of who exploded, and unix time stamp of when the game will start again)
+     *  0x09 - Player Eliminated (For client, only sent when client is eliminated / spectating)
      *  </pre>
      */
 	@Override
@@ -71,6 +72,8 @@ class ClientHandler extends Thread
                         players.addPlayer(readPlayerInfo()); 
 						if(players.getGameStarted()) {
 							players.eliminatePlayer(playerNum);
+							sendStartGame();
+							out.write(0x09);
 						}
 						sharedThread.playerJoined();
                         break;
@@ -135,6 +138,14 @@ class ClientHandler extends Thread
 		System.out.println(name + ", " + color);
 		return new PlayerInfo(name, color);
 	}
+
+	public void sendStartGame() throws IOException {
+		out.write(0x05);
+		out.write(MasterClientHandler.toByteArray(players.getStartTime()));
+		out.write(MasterClientHandler.toByteArray(players.getGameLength()));
+		out.flush();
+		sendPotatoSwitched(players.playerHoldingBomb);
+    }
 
 	private void sendOtherPlayers(ArrayList<PlayerLite> otherPlayers) throws IOException {
 

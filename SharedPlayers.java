@@ -12,6 +12,7 @@ public class SharedPlayers implements Serializable{
     protected ArrayList<Integer> eliminatedPlayers = new ArrayList<Integer>();
     protected int playerHoldingBomb = -1;
     protected boolean gameStarted = false;
+    protected short gameLength = -1;
     protected long startTime = -1;
 
     public SharedPlayers() {}
@@ -48,7 +49,7 @@ public class SharedPlayers implements Serializable{
         int index = playerIndicies.get(playerNum);
 
         for(int i = 0; i < players.size(); i++) {
-            if(i != index)
+            if(i != index && !eliminatedPlayers.contains(i))
                 otherPlayers.add(players.get(i));
         }
 
@@ -77,6 +78,10 @@ public class SharedPlayers implements Serializable{
 
     public int getPlayerHoldingBomb() {
         return playerHoldingBomb;
+    }
+
+    public short getGameLength() {
+        return gameLength;
     }
 
     public synchronized int removePlayer(int playerNum) {
@@ -115,8 +120,20 @@ public class SharedPlayers implements Serializable{
         this.playerHoldingBomb = playerHoldingBomb;
     }
 
+    public void setGameLength(short gameLength) {
+        this.gameLength = gameLength;
+    }
+
     public boolean isEliminated(int playerNum) {
         int index = playerIndicies.get(playerNum);
         return eliminatedPlayers.contains(index);
+    }
+
+    public void reset() {
+        eliminatedPlayers.clear();
+        playerHoldingBomb = -1;
+        gameStarted = false;
+        gameLength = -1;
+        startTime = -1;
     }
 }

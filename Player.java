@@ -1,3 +1,7 @@
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 
@@ -8,6 +12,7 @@ public class Player extends Sprite {
     private double gravity = 2800, velocity = -1400;
     private int jumpCount = 0;
     protected boolean isJumping = true, isGrounded, wallSliding;
+    private Font font = new Font("Mochiy Pop P One", Font.PLAIN, 24);
 
     public Player() {
         super();
@@ -43,6 +48,38 @@ public class Player extends Sprite {
         }
 
         super.updateCenter();
+    }
+
+    public void draw(Graphics2D g2, PlayerInfo info, boolean eliminated) {
+        g2.setFont(font);
+        FontMetrics metrics = g2.getFontMetrics();
+    
+        if(eliminated) {
+            //Semi-transparent background for name
+            g2.setColor(new Color(0, 0, 0, 75));
+            g2.fillRect((int) (x + width / 2) - (metrics.stringWidth(info.getName()) / 2) - 5, (int) y - metrics.getHeight() - 2, metrics.stringWidth(info.getName()) + 10, metrics.getHeight() + 4);
+            
+            //Name
+            g2.setColor(Color.WHITE);
+            g2.drawString(info.getName(), (int) (x + width / 2) - metrics.stringWidth(info.getName()) / 2, (int) y - 10);
+            
+            //Player
+            g2.setColor(new Color(info.getColor().getRed(), info.getColor().getGreen(), info.getColor().getBlue(), 100));
+            g2.fillRect((int)((x % 1 > 0.4) ? Math.ceil(x) : Math.floor(x)), (int) ((y % 1 > 0.4) ? Math.ceil(y) : Math.floor(y)), width, height);
+        }
+        else {
+            //Semi-transparent background for name
+            g2.setColor(new Color(0, 0, 0, 150));
+            g2.fillRect((int) (x + width / 2) - (metrics.stringWidth(info.getName()) / 2) - 5, (int) y - metrics.getHeight() - 2, metrics.stringWidth(info.getName()) + 10, metrics.getHeight() + 4);
+            
+            //Name
+            g2.setColor(Color.WHITE);
+            g2.drawString(info.getName(), (int) (x + width / 2) - metrics.stringWidth(info.getName()) / 2, (int) y - 10);
+            
+            //Player
+            g2.setColor(info.getColor());
+            g2.fillRect((int)((x % 1 > 0.4) ? Math.ceil(x) : Math.floor(x)), (int) ((y % 1 > 0.4) ? Math.ceil(y) : Math.floor(y)), width, height);
+        }
     }
 
     public void jump() {

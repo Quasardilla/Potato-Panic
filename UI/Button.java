@@ -30,6 +30,15 @@ public class Button extends UIElement{
         this.backColor = backColor;
     }
 
+    public Button(double x, double y, double width, double height, Color color)
+    {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.backColor = color;
+    }
+
     @Override
     public void drawElement() 
     {
@@ -38,6 +47,7 @@ public class Button extends UIElement{
         g2.fillRect((int) x, (int) y, (int) width, (int) height); 
 
         //draw text
+        if(text == null) return;
         g2.setFont(font);
         this.font = new Font(this.font.getFontName(), Font.PLAIN, (int) this.fontSize);
         g2.setColor(textColor);
@@ -46,7 +56,7 @@ public class Button extends UIElement{
 
     public boolean mouseClick(double mousex, double mousey)
     {
-        if (mousex > x && mousex < mousex + width && mousey > y && mousey < y + height) return true;
+        if (mousex > x && mousex < x + width && mousey > y && mousey < y + height) return true;
         else return false;
     }
 

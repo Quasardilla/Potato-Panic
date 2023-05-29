@@ -22,6 +22,7 @@ class ServerHandler extends Thread
 	protected PlayerInfo playerInfo;	
     protected int playerHoldingBomb;
     protected long startTime;
+    protected short gameLength;
     protected boolean gameStarted = false, playerEliminated = false;
     protected Platform platform;
 	protected int playerNum;
@@ -63,6 +64,7 @@ class ServerHandler extends Thread
      *  0x06 - End Game (For clients)
      *  0x07 - Potato switches to new player (For client, player index of who is now holding potato)
      *  0x08 - Potato explodes (For client, player index of who exploded, and unix time stamp of when the game will start again)
+     *  0x09 - Player Eliminated (For client, only sent when client is eliminated / spectating)
      *  </pre>
      */
 	@Override
@@ -94,12 +96,15 @@ class ServerHandler extends Thread
                     case 0x03:
                         System.out.println("Reading player infos");
                         playerInfos = readPlayerInfos();
+                        System.out.println("There are " + playerInfos.size() + " other players");
                         break;
                     case 0x04:
                         players = readPlayers();
                         break;
                     case 0x05:
                         startTime = readStartTime();
+                        gameLength = readGameLength();
+                        System.out.println(gameLength);
                         gameStarted = true;
                         System.out.println("Game started at " + startTime);
                         break;
@@ -118,6 +123,10 @@ class ServerHandler extends Thread
                             playerEliminated = true;
                         System.out.println("Player that exploded: " + playerHoldingBomb);
                         // startTime = readStartTime();
+                        break;
+                    case 0x09:
+                        System.out.println("Player eliminated");
+                        playerEliminated = true;
                         break;
                     default:
                         System.err.println("A fatal error has occured.");
@@ -234,6 +243,13 @@ class ServerHandler extends Thread
         return toLong(time);
     }
 
+    public short readGameLength() throws IOException, ClassNotFoundException {
+        byte[] length = new byte[2];
+        in.read(length);
+
+        return toShort(length);
+    }
+
     public int readPlayerIndex() throws IOException, ClassNotFoundException {
         return in.read();
     }
@@ -244,6 +260,15 @@ class ServerHandler extends Thread
                 (byte)(value >> 16),
                 (byte)(value >> 8),
                 (byte)value};
+    }
+
+    public static short toShort(byte[] bytes) {
+        short value = 0;
+        for (byte b : bytes) {
+            value = (short) ((value << 8) + (b & 0xFF));
+        }
+
+        return value;
     }
 
     public static int toInt(byte[] bytes) {

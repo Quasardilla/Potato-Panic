@@ -18,15 +18,15 @@ public class Client {
     }
 
 
-    public void startConnection() {
+    public IOException startConnection() {
         try {
             clientSocket = new Socket(ip, port);
             out = new BufferedOutputStream(clientSocket.getOutputStream());
             in = new BufferedInputStream(clientSocket.getInputStream());
-
         } catch (IOException e) {
-            e.printStackTrace();
+            return e;
         }
+        return null;
 
     }
 
