@@ -18,7 +18,8 @@ class MasterClientHandler extends Thread
 	protected ArrayList<BufferedOutputStream> outputStreams;
 	protected ArrayList<ClientHandler> clientHandlers;
     protected SharedPlayers players;
-    private boolean bombIntermission = false, recentlySwitched = false;
+    private boolean bombIntermission = false;
+    private int p1Switched = -1, p2Switched = -1;
     private short gameLength = 20;
     private short intermissionLength = 5;
 
@@ -71,7 +72,11 @@ class MasterClientHandler extends Thread
                         Rectangle p2 = new Rectangle(playerLites.get(j).x, playerLites.get(j).y, 50, 50);
                         if(p1.intersects(p2) && players.gameStarted  && 
                         !players.isEliminated(players.getPlayerNumFromIndex(i)) && !players.isEliminated(players.getPlayerNumFromIndex(j))) {
-                            if(!recentlySwitched) {
+                            if(!(i == p1Switched && j == p2Switched)) {
+                                System.out.println("player1: " + i);
+                                System.out.println("player2: " + j);
+                                System.out.println(players.playerHoldingBomb);
+
                                 if(players.playerHoldingBomb == i) {
                                     potatoSwitched(j);
                                     players.playerHoldingBomb = j;
@@ -80,11 +85,13 @@ class MasterClientHandler extends Thread
                                     potatoSwitched(i);
                                     players.playerHoldingBomb = i;
                                 }
-                                recentlySwitched = true;
+                                p1Switched = i;
+                                p2Switched = j;
                             }
                         }
                         else {
-                            recentlySwitched = false;
+                            p1Switched = -1;
+                            p2Switched = -1;
                         }
                     }
                 }
@@ -100,9 +107,11 @@ class MasterClientHandler extends Thread
         if(players.getGameStarted() || players.getPlayers().size() < 2)
             return;
 
-        recentlySwitched = false;
+        p1Switched = -1;
+        p2Switched = -1;
         bombIntermission = false;
 		players.setGameStarted(true);
+
         while(players.getEliminatedPlayers().contains(players.playerHoldingBomb))
 		    players.setPlayerHoldingBomb((int) (Math.random() * (players.getPlayers().size() - players.getEliminatedPlayers().size())));
         players.setGameLength(gameLength);

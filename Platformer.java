@@ -230,9 +230,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                 int x = (int) serverButtons.get(i).x;
                 int y = (int) serverButtons.get(i).y + metrics.getHeight();
                 if(selectedServer == i)
-                    serverButtons.get(i).backColor = Color.BLUE;
+                    serverButtons.get(i).backColor = Color.GRAY;
                 else
-                    serverButtons.get(i).backColor = Color.RED;
+                    serverButtons.get(i).backColor = Color.LIGHT_GRAY;
                 serverButtons.get(i).draw();
                 g2.setColor(Color.BLACK);
                 g2.drawString(servers.get(i).getName(), x + 10, y);
@@ -358,18 +358,11 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             metrics = g2.getFontMetrics();
             
             String str = "Settings";
-            g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), 50);
+            g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), margin + 50);
 
             g2.setFont(mediumFont);
             g2.setColor(Color.BLACK);
             metrics = g2.getFontMetrics();
-
-            str = "FPS Cap: " + FPSCap;
-            g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), 200);
-
-            str = "Unlimited FPS: " + unlimited;
-            g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), 250);
-
         }
 
         //keep this for program to work
@@ -799,7 +792,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private ArrayList<Button> generateServerButtons(int x, int y, int width, int height, ArrayList<ServerObject> servers) {
         ArrayList<Button> buttons = new ArrayList<Button>();
         for(int i = 0; i < servers.size(); i++) {
-            buttons.add(new Button(x, y + (height * i) + ((i > 0) ? 5 * i : 0), width, height, Color.red));
+            buttons.add(new Button(x, y + (height * i) + ((i > 0) ? 5 * i : 0), width, height, Color.LIGHT_GRAY));
         }
         return buttons;
     }
