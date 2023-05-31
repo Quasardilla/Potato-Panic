@@ -1,7 +1,5 @@
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.awt.Color;
 
 public class SharedPlayers implements Serializable{
     private static final long serialVersionUID = 1L;
@@ -40,6 +38,10 @@ public class SharedPlayers implements Serializable{
         return players;
     }
 
+    public ArrayList<Integer> getEliminatedPlayers() {
+        return eliminatedPlayers;
+    }
+
     public ArrayList<Integer> getPlayerIndicies() {
         return playerIndicies;
     }
@@ -49,7 +51,7 @@ public class SharedPlayers implements Serializable{
         int index = playerIndicies.get(playerNum);
 
         for(int i = 0; i < players.size(); i++) {
-            if(i != index && !eliminatedPlayers.contains(i))
+            if(i != index)
                 otherPlayers.add(players.get(i));
         }
 
@@ -61,7 +63,7 @@ public class SharedPlayers implements Serializable{
         int index = playerIndicies.get(playerNum);
 
         for(int i = 0; i < playerInfos.size(); i++) {
-            if(i != index && !eliminatedPlayers.contains(i))
+            if(i != index)
                 otherPlayers.add(playerInfos.get(i));
         }
 
@@ -86,7 +88,8 @@ public class SharedPlayers implements Serializable{
 
     public synchronized int removePlayer(int playerNum) {
         int index = playerIndicies.get(playerNum);
-        players.remove(index);
+        if(gameStarted)
+            players.remove(index);
         playerInfos.remove(index);
 
         for(int i = index + 1; i < playerIndicies.size(); i++) {
@@ -97,10 +100,6 @@ public class SharedPlayers implements Serializable{
             eliminatedPlayers.remove(eliminatedPlayers.indexOf(index));
 
         return index;
-    }
-
-    public synchronized void eliminatePlayer(int index) {
-        eliminatedPlayers.add(index);
     }
 
     public void setPlayer(int playerNum, PlayerLite player) {
@@ -129,8 +128,29 @@ public class SharedPlayers implements Serializable{
         return eliminatedPlayers.contains(index);
     }
 
+    public int getPlayerNumFromIndex(int index) {
+        return playerIndicies.indexOf(index);
+    }
+
     public void reset() {
         eliminatedPlayers.clear();
+        // playerInfos.clear();
+        // players.clear();
+
+        playerHoldingBomb = -1;
+        gameStarted = false;
+        gameLength = -1;
+        startTime = -1;
+    }
+
+    public void wipe() {
+        System.out.println("Wiping players");
+
+        eliminatedPlayers.clear();
+        playerInfos.clear();
+        players.clear();
+        playerIndicies.clear();
+
         playerHoldingBomb = -1;
         gameStarted = false;
         gameLength = -1;

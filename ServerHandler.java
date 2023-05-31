@@ -2,11 +2,6 @@ import java.awt.Color;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.math.BigInteger;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -18,6 +13,7 @@ class ServerHandler extends Thread
 	protected final Socket socket;
     protected ArrayList<PlayerLite> players = new ArrayList<PlayerLite>();
     protected ArrayList<PlayerInfo> playerInfos = new ArrayList<PlayerInfo>();
+    protected ArrayList<Integer> eliminatedPlayers = new ArrayList<Integer>();
 	protected Player player;	
 	protected PlayerInfo playerInfo;	
     protected int playerHoldingBomb;
@@ -46,8 +42,6 @@ class ServerHandler extends Thread
         this.out = out;
         this.player = player;
         this.playerInfo = playerInfo;
-        this.players = players;
-        this.playerInfos = playerInfos;
         this.platform = originPlatform;
 	}
 
@@ -89,6 +83,7 @@ class ServerHandler extends Thread
             try {
                 int type = in.read();
 
+                // System.out.println(type);
                 switch(type) {
                     case 0x01:
                         removePlayer();
@@ -104,21 +99,27 @@ class ServerHandler extends Thread
                     case 0x05:
                         startTime = readStartTime();
                         gameLength = readGameLength();
-                        System.out.println(gameLength);
                         gameStarted = true;
                         System.out.println("Game started at " + startTime);
+                        System.out.println("Game length: " + gameLength);
                         break;
                     case 0x06:
                         gameStarted = false;
+                        // sendPlayerInfo(playerInfo);
+                        eliminatedPlayers.clear();
+                        playerEliminated = false;
+                        System.out.println("Game ended");
                         break;
                     case 0x07:
                         playerHoldingBomb = readPlayerIndex();
-                        System.out.println("Player now holding bomb: " + playerHoldingBomb);
                         break;
                     case 0x08:
                         playerHoldingBomb = readPlayerIndex();
-                        if(playerHoldingBomb != 255)
-                            playerInfos.remove(playerHoldingBomb);
+                        System.out.println("Player holding bomb: " + playerHoldingBomb);
+                        if(playerHoldingBomb != 255) {
+                            eliminatedPlayers.add(playerHoldingBomb);
+                            playerHoldingBomb = -1;
+                        }
                         else
                             playerEliminated = true;
                         System.out.println("Player that exploded: " + playerHoldingBomb);
@@ -129,11 +130,12 @@ class ServerHandler extends Thread
                         playerEliminated = true;
                         break;
                     default:
-                        System.err.println("A fatal error has occured.");
-                        System.out.println("Type: " + type);
-                        for(int i = 0; i < 20; i++)
-                            System.out.println(in.read());
-                        close();
+                        // System.err.println("A fatal error has occured.");
+                        // System.out.println("Type: " + type);
+                        // for(int i = 0; i < 20; i++)
+                        //     System.out.println(in.read());
+                        // close();
+                        // System.out.println("irregular type: " + type);
                         break;
                 }
 
@@ -171,6 +173,8 @@ class ServerHandler extends Thread
     }
 
     public void sendPlayerInfo(PlayerInfo player) throws IOException, ClassNotFoundException {
+        System.out.println("sending player info");
+
         out.write((byte) 0x00);
         byte[] name = player.name.getBytes();
         out.write(name.length);
@@ -182,6 +186,8 @@ class ServerHandler extends Thread
     }
 
     public void sendStartGame() throws IOException {
+        System.out.println("Sending start game");
+
         out.write((byte) 0x05);
         out.flush();
     }
@@ -189,6 +195,12 @@ class ServerHandler extends Thread
     public void removePlayer() throws IOException, ClassNotFoundException {
         int index = in.read();
         playerInfos.remove(index);
+
+        for(int i = 0; i < eliminatedPlayers.size(); i++)
+        {
+            if(index < eliminatedPlayers.get(i))
+                eliminatedPlayers.set(i, eliminatedPlayers.get(i) - 1);
+        }
     }
 
     public ArrayList<PlayerLite> readPlayers() throws IOException, ClassNotFoundException {
@@ -238,8 +250,6 @@ class ServerHandler extends Thread
     public long readStartTime() throws IOException, ClassNotFoundException {
         byte[] time = new byte[8];
         in.read(time);
-        System.out.println(System.currentTimeMillis());
-
         return toLong(time);
     }
 
@@ -296,6 +306,10 @@ class ServerHandler extends Thread
 
     public ArrayList<PlayerInfo> getPlayerInfos() {
         return playerInfos;
+    }
+
+    public ArrayList<Integer> getEliminatedPlayers() {
+        return eliminatedPlayers;
     }
 
     public long getStartTime() {

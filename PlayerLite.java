@@ -17,7 +17,7 @@ public class PlayerLite implements Serializable{
         this.y = y;
     }
 
-    public void draw(Graphics2D g2, Platform p, PlayerInfo info) {
+    public void draw(Graphics2D g2, Platform p, PlayerInfo info, boolean ghost) {
         g2.setFont(font);
         FontMetrics metrics = g2.getFontMetrics();
     
@@ -34,7 +34,10 @@ public class PlayerLite implements Serializable{
         g2.drawString(info.getName(), (int) (localizedX + 50 / 2) - metrics.stringWidth(info.getName()) / 2, (int) localizedY - 10);
         
         //Player
-        g2.setColor(info.getColor());
+        if(ghost)
+            g2.setColor(new Color(info.getColor().getRed(), info.getColor().getGreen(), info.getColor().getBlue(), 100));
+        else
+            g2.setColor(info.getColor());
         g2.fillRect(localizedX, localizedY, 50, 50);
     }
 

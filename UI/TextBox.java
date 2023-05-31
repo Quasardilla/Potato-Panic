@@ -2,75 +2,82 @@ package UI;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public class TextBox extends UIElement implements KeyListener
 {
-    public double height, textToPromptOffset, promptToBackgroundOffset;
-    public int promptFontSize, textFontSize, edgeCurve;
-    public String prompt, text;
-    public Color promptColor, textColor, backgroundcColor;
-    public Font promptFont, textFont;
+    public int width, height;
+    public Color backgroundColor, fontColor, defaultTextColor;
+    public Font font;
+    public String defaultText;
+    public boolean isSelected;
+    public String text;
     
-    public TextBox(double x, double y, double height, String prompt, Color promptColor, Font promptFont, int promptFontSize, String text, Color textColor, Font textFont, int textFontSize, double textToPromptOffset, double promptToBackgroundOffset, Color backgroundColor, int edgeCurve)
+    public TextBox(double x, double y, int width, int height, Color backgroundColor, Font font, Color fontColor, String defaultText, Color defaultTextColor)
     {
         this.x = x;
         this.y = y;
+        this.width = width;
         this.height = height;
-        this.textToPromptOffset = textToPromptOffset;
-        this.promptToBackgroundOffset = promptToBackgroundOffset;
-        this.promptFontSize = promptFontSize;
-        this.textFontSize = textFontSize;
-        this.edgeCurve = edgeCurve;
-        this.prompt = prompt;
-        this.text = text;
-        this.promptColor = promptColor;
-        this.textColor = textColor;
-        this.backgroundcColor = backgroundColor;
-        this.promptFont = promptFont;
-        this.promptFont = new Font(this.promptFont.getFontName(), Font.PLAIN, promptFontSize);
-        this.textFont = textFont;
-        this.textFont = new Font(this.textFont.getFontName(), Font.PLAIN, textFontSize);
+        this.backgroundColor = backgroundColor;
+        this.font = font;
+        this.fontColor = fontColor;
+        this.defaultText = defaultText;
+        this.defaultTextColor = defaultTextColor;
     }
 
     @Override
     public void drawElement() 
     {
         //draw background
-        g2.setColor(backgroundcColor);
+        g2.setColor(backgroundColor);
+        g2.fillRect((int) x, (int) y, width, height);
         
-        promptFont = new Font(promptFont.getFontName(), Font.PLAIN, (int) promptFontSize);
-        g2.setFont(promptFont);
-        int pw = g2.getFontMetrics().stringWidth(prompt);
-        
-        textFont = new Font(textFont.getFontName(), Font.PLAIN, (int) textFontSize);
-        g2.setFont(textFont);
-        int tw = g2.getFontMetrics().stringWidth(text);
-                
-        int w = (int) (promptToBackgroundOffset + textToPromptOffset + promptToBackgroundOffset + pw + tw);
-
-        g2.fillRoundRect((int) x, (int) y, w, (int) height, edgeCurve, edgeCurve);
-
-        //draw prompt
-        g2.setColor(promptColor);
-        promptFont = new Font(promptFont.getFontName(), Font.PLAIN, (int) promptFontSize);
-        g2.setFont(promptFont);
-        g2.drawString(prompt, (int) (x + promptToBackgroundOffset), (int) (y + (height / 2) + (promptFontSize / 3)));
-
         //draw text
-        g2.setColor(textColor);
-        textFont = new Font(textFont.getFontName(), Font.PLAIN, (int) textFontSize);
-        g2.setFont(textFont);
-        g2.drawString(text, (int) (x + promptToBackgroundOffset + g2.getFontMetrics().stringWidth(prompt) + textToPromptOffset), (int) (y + (height / 2) + (textFontSize / 3)));
+        g2.setColor(defaultTextColor);
+        g2.setFont(font);
+        FontMetrics metrics = g2.getFontMetrics();
+        
+        if(text == null || text.equals(""))
+            g2.drawString(defaultText, (int) x + 5, (int) y + (height / 2) + (metrics.getHeight() / 2) - 5);
+        else {
+            g2.setColor(fontColor);
+            g2.drawString(text, (int) x + 5, (int) y + (height / 2) + (metrics.getHeight() / 2) - 5);
+        }
         
     }
     
+    public void mouseClick(double mousex, double mousey)
+    {
+        if (mousex > x && mousex < x + width && mousey > y && mousey < y + height) 
+            isSelected = true;
+        else 
+            isSelected = false;
+    }
 
     @Override
     public void keyTyped(KeyEvent e) 
     {
+        // if(e.getKeyCode() == KeyEvent.VK_LEFT)
+        // if(e.getKeyCode() == KeyEvent.VK_RIGHT)
         
+        if(e.isActionKey() || e.getKeyChar() == KeyEvent.CHAR_UNDEFINED)
+            return;
+
+            
+        if(isSelected) {
+            if(e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
+                //Split the if statement so it would absorb backspace and delete, even if the text is empty
+                if(text.length() > 0)
+                    text = text.substring(0, text.length() - 1);
+            }
+            else {
+                text += e.getKeyChar();
+            }
+        }
+
     }
 
     @Override

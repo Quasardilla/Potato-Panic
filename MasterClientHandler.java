@@ -1,14 +1,24 @@
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+
+/**
+ * This class was made becase I had to be able
+ * to send messages to all clients, and I couldn't
+ * do that from the ClientHandler class, because 
+ * it doesn't know if other clients exist. While
+ * I could have passed a list of the clients through
+ * the constructor, it would be pretty messy.
+ */
 class MasterClientHandler extends Thread
 {
 	protected ArrayList<BufferedOutputStream> outputStreams;
 	protected ArrayList<ClientHandler> clientHandlers;
     protected SharedPlayers players;
-    private boolean bombIntermission = false;
+    private boolean bombIntermission = false, recentlySwitched = false;
     private short gameLength = 20;
     private short intermissionLength = 5;
 
@@ -24,18 +34,8 @@ class MasterClientHandler extends Thread
 
 
     /** 
-     *  <pre>     
-     *Message Types: 
-     *  0x00 - Player Join (For server, playerInfo like name, color, etc.)
-     *  0x01 - Player Leaves (For client, player index of who left)
-     *  0x02 - PlayerLite Info (For server, player position)
-     *  0x03 - PlayerInfo (For client, names, colors, etc.)
-     *  0x04 - PlayerList Info (For client, all players but current player)
-     *  0x05 - Start Game (For server, which will then send 0x05 to all clients, along with unix time stamp of when game started, and how long the game will last)
-     *  0x06 - End Game (For clients)
-     *  0x07 - Potato switches to new player (For client, player index of who is now holding potato)
-     *  0x08 - Potato explodes (For client, playerLite of who exploded, and unix time stamp of when the game will start again)
-     *  </pre>
+     * Manages the game's timing, and collisions
+     * for potato switches.
      */
 	@Override
 	public void run()
@@ -51,28 +51,61 @@ class MasterClientHandler extends Thread
                     bombIntermission = true;
                     players.setGameLength(intermissionLength);
                     potatoExploded(players.playerHoldingBomb);
-                    if(players.eliminatedPlayers.size() == players.players.size() - 1) {
+                    if(players.eliminatedPlayers.size() >= players.players.size() - 1) {
                         endGame();
+                        bombIntermission = false;
                         continue;
                     }
                     players.setGameStarted(false);
                 }
-                if(bombIntermission && System.currentTimeMillis() - players.getStartTime() > 5000) {
+                if(bombIntermission && System.currentTimeMillis() - players.getStartTime() > intermissionLength * 1000) {
                     bombIntermission = false;
                     players.setGameLength(gameLength);
                     startGame();
                 }
+
+                ArrayList<PlayerLite> playerLites = players.getPlayers();
+                for(int i = 0; i < playerLites.size(); i++) {
+                    Rectangle p1 = new Rectangle(playerLites.get(i).x, playerLites.get(i).y, 50, 50);
+                    for(int j = i + 1; j < playerLites.size(); j++) {
+                        Rectangle p2 = new Rectangle(playerLites.get(j).x, playerLites.get(j).y, 50, 50);
+                        if(p1.intersects(p2) && players.gameStarted  && 
+                        !players.isEliminated(players.getPlayerNumFromIndex(i)) && !players.isEliminated(players.getPlayerNumFromIndex(j))) {
+                            if(!recentlySwitched) {
+                                if(players.playerHoldingBomb == i) {
+                                    potatoSwitched(j);
+                                    players.playerHoldingBomb = j;
+                                }
+                                else if(players.playerHoldingBomb == j) {
+                                    potatoSwitched(i);
+                                    players.playerHoldingBomb = i;
+                                }
+                                recentlySwitched = true;
+                            }
+                        }
+                        else {
+                            recentlySwitched = false;
+                        }
+                    }
+                }
+                
 
             } catch (Exception e) { e.printStackTrace(); }
 		}
 	}
 
     public void startGame() throws IOException {
-        if(players.getGameStarted())
+        System.out.println("Game started");
+
+        if(players.getGameStarted() || players.getPlayers().size() < 2)
             return;
 
+        recentlySwitched = false;
+        bombIntermission = false;
 		players.setGameStarted(true);
-		players.setPlayerHoldingBomb((int) (Math.random() * (players.getPlayers().size())));
+        while(players.getEliminatedPlayers().contains(players.playerHoldingBomb))
+		    players.setPlayerHoldingBomb((int) (Math.random() * (players.getPlayers().size() - players.getEliminatedPlayers().size())));
+        players.setGameLength(gameLength);
 		players.setStartTime(System.currentTimeMillis());
 		for(BufferedOutputStream out : outputStreams) {
             if(out == null)
@@ -94,11 +127,11 @@ class MasterClientHandler extends Thread
     }
 
     public void endGame() throws IOException {
-        players.reset();
-        if(!players.getGameStarted())
-        return;
+        System.out.println("Game ended");
 
+        players.reset();
 		players.setGameStarted(false);
+
 		for(BufferedOutputStream out : outputStreams) {
             if(out == null)
                 continue;
@@ -129,6 +162,12 @@ class MasterClientHandler extends Thread
 			client.sendDisconnectedPlayer(playerNum);
 		}
 
+        players.removePlayer(playerNum);
+
+        if(players.getPlayers().size() < 1) {
+            players.wipe();
+        }
+
         System.out.println("Player " + playerNum + " disconnected");
     }
 
@@ -142,23 +181,29 @@ class MasterClientHandler extends Thread
 	}
 
 	private void potatoExploded(int playerNum) throws IOException {
+        System.out.println(playerNum + " exploded");
+        players.eliminatedPlayers.add(playerNum);
+
         for(ClientHandler client : clientHandlers) {
             if(client == null)
             continue;
             
             client.sendPotatoExploded(playerNum);
         }
-        players.setStartTime(System.currentTimeMillis());
 
-        for(BufferedOutputStream out : outputStreams) {
-            if(out == null)
-            continue;
-
-			out.write(0x05);
-			out.write(toByteArray(players.getStartTime()));
-            out.write(toByteArray(players.getGameLength()));
-			out.flush();
-		}
+        if(players.gameStarted) {
+            players.setStartTime(System.currentTimeMillis());
+    
+            for(BufferedOutputStream out : outputStreams) {
+                if(out == null)
+                continue;
+    
+                out.write(0x05);
+                out.write(toByteArray(players.getStartTime()));
+                out.write(toByteArray(players.getGameLength()));
+                out.flush();
+            }
+        }
 	}
 
     public static byte[] toByteArray(short value) {

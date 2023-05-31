@@ -3,11 +3,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
-import java.math.BigInteger;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -23,6 +19,8 @@ class ClientHandler extends Thread
 	protected int playerNum;
 	protected static int playerCount = 0;
 	protected int acknowledgedPlayers = 0;
+
+	private boolean recentlySwitched = false;
 
 	// Constructor
 	public ClientHandler(Socket socket, InputStream in, OutputStream out, MasterClientHandler sharedThread, SharedPlayers players)
@@ -66,12 +64,13 @@ class ClientHandler extends Thread
 			} catch (InterruptedException e) { e.printStackTrace(); }
 			
 			try {
-				byte type = (byte) in.read();
+				int type = in.read();
                 switch(type) {
                     case 0x00:
                         players.addPlayer(readPlayerInfo()); 
 						if(players.getGameStarted()) {
-							players.eliminatePlayer(playerNum);
+							players.eliminatedPlayers.add(playerNum);
+							System.out.println("adding player as spectator");
 							sendStartGame();
 							out.write(0x09);
 						}
@@ -79,13 +78,28 @@ class ClientHandler extends Thread
                         break;
                     case 0x02:
 						players.setPlayer(playerNum, readPlayer());
-						sendOtherPlayers(players.getOtherPlayers(playerNum));
+						/*
+						 * "recentlySwitched" exists because when the potato switches,
+						 * it delays the player from having their position registered
+						 * for ~10 ms, the same amount of time the thread sleeps for.
+						 * This time adds up as the potato switches throughout the game, 
+						 * so instead of sending the other player's positions, which 
+						 * would prompt the client to send their position 
+						 * (upholding the delay), I simply catch up the thread by just 
+						 * reading the player's position.
+						 */
+						if(!recentlySwitched) {
+							sendOtherPlayers(players.getOtherPlayers(playerNum));
+						} else
+							recentlySwitched = false;
+
                         break;
                     case 0x05:
                         sharedThread.startGame();
                         break;
                     default:
                         System.err.println("An invalid message was recieved from player " + playerNum + ".");
+						System.out.println(type);
 						sharedThread.playerDisconnected(players.getPlayerIndicies().get(playerNum));
                         close();
                         break;
@@ -97,6 +111,8 @@ class ClientHandler extends Thread
 				close();
 			} catch (Exception e) { e.printStackTrace(); }
 		}
+
+		return;
 
 	}
 
@@ -163,6 +179,8 @@ class ClientHandler extends Thread
 	public void sendOtherPlayerInfos() throws IOException {
 		ArrayList<PlayerInfo> otherPlayers = players.getOtherPlayerInfos(playerNum);
 
+		System.out.println(otherPlayers.size());
+
 		out.write(0x03);
 		out.write(otherPlayers.size());
 		for(int i = 0; i < otherPlayers.size(); i++)
@@ -189,34 +207,34 @@ class ClientHandler extends Thread
 	public void sendPotatoSwitched(int playerNum) throws IOException {
 		int otherIndex = players.getPlayerIndicies().get(playerNum);
 		int thisIndex = players.getPlayerIndicies().get(this.playerNum);
+		
 		if(otherIndex < thisIndex) {
 			thisIndex--;
 		}
-		if(otherIndex == thisIndex)
+		else if(otherIndex == thisIndex)
 			thisIndex = 255;
+
 		out.write(0x07);
 		out.write(thisIndex);
 		out.flush();
+
+		recentlySwitched = true;
 	}
 
 	public void sendPotatoExploded(int playerNum) throws IOException {
 		int otherIndex = players.getPlayerIndicies().get(playerNum);
 		int thisIndex = players.getPlayerIndicies().get(this.playerNum);
 
-		// System.out.println(players.playerHoldingBomb);
-		// System.out.println(otherIndex);
-		// System.out.println(thisIndex);
-
-		players.eliminatePlayer(playerNum);
-
-		if(otherIndex < thisIndex) {
+		if(otherIndex > thisIndex) {
 			thisIndex--;
 		}
-		if(otherIndex == thisIndex)
+		else if(otherIndex == thisIndex)
 			thisIndex = 255; 
 
 		out.write(0x08);
 		out.write(thisIndex);
 		out.flush();
+
+		recentlySwitched = true;
 	}
 }
