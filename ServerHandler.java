@@ -112,10 +112,10 @@ class ServerHandler extends Thread
                         break;
                     case 0x07:
                         playerHoldingBomb = readPlayerIndex();
+                        System.out.println("Player holding bomb: " + playerHoldingBomb);
                         break;
                     case 0x08:
                         playerHoldingBomb = readPlayerIndex();
-                        System.out.println("Player holding bomb: " + playerHoldingBomb);
                         if(playerHoldingBomb != 255) {
                             eliminatedPlayers.add(playerHoldingBomb);
                             playerHoldingBomb = -1;

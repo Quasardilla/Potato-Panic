@@ -118,9 +118,9 @@ class ClientHandler extends Thread
 
 	private void close() {
         try {
-            socket.close();
+			if(!socket.isClosed())
+            	socket.close();
             this.in.close();
-            this.out.close();
         } catch (IOException e) { e.printStackTrace(); }
     }
 
@@ -178,8 +178,6 @@ class ClientHandler extends Thread
 
 	public void sendOtherPlayerInfos() throws IOException {
 		ArrayList<PlayerInfo> otherPlayers = players.getOtherPlayerInfos(playerNum);
-
-		System.out.println(otherPlayers.size());
 
 		out.write(0x03);
 		out.write(otherPlayers.size());

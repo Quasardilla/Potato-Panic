@@ -72,11 +72,14 @@ class MasterClientHandler extends Thread
                         Rectangle p2 = new Rectangle(playerLites.get(j).x, playerLites.get(j).y, 50, 50);
                         if(p1.intersects(p2) && players.gameStarted  && 
                         !players.isEliminated(players.getPlayerNumFromIndex(i)) && !players.isEliminated(players.getPlayerNumFromIndex(j))) {
-                            if(!(i == p1Switched && j == p2Switched)) {
-                                System.out.println("player1: " + i);
-                                System.out.println("player2: " + j);
-                                System.out.println(players.playerHoldingBomb);
+                            // if(!(i == p1Switched && j == p2Switched)) {
 
+                            System.out.println(i + ", " + p1Switched);
+                            System.out.println(j + ", " + p2Switched);
+                            System.out.println(i == p1Switched ^ j == p2Switched);
+                            if(i == p1Switched ^ j == p2Switched) {
+                                System.out.println("player holding bomb currently" + players.playerHoldingBomb);
+                                
                                 if(players.playerHoldingBomb == i) {
                                     potatoSwitched(j);
                                     players.playerHoldingBomb = j;
@@ -87,11 +90,12 @@ class MasterClientHandler extends Thread
                                 }
                                 p1Switched = i;
                                 p2Switched = j;
+                                System.out.println("player holding bomb after switch" + players.playerHoldingBomb);
                             }
                         }
-                        else {
-                            p1Switched = -1;
-                            p2Switched = -1;
+                        else if(i == p1Switched && j == p2Switched){
+                            p1Switched = players.getPlayerHoldingBomb();
+                            p2Switched = players.getPlayerHoldingBomb();
                         }
                     }
                 }
@@ -107,13 +111,15 @@ class MasterClientHandler extends Thread
         if(players.getGameStarted() || players.getPlayers().size() < 2)
             return;
 
-        p1Switched = -1;
-        p2Switched = -1;
-        bombIntermission = false;
-		players.setGameStarted(true);
-
-        while(players.getEliminatedPlayers().contains(players.playerHoldingBomb))
-		    players.setPlayerHoldingBomb((int) (Math.random() * (players.getPlayers().size() - players.getEliminatedPlayers().size())));
+            bombIntermission = false;
+            players.setGameStarted(true);
+            
+        do {
+            players.setPlayerHoldingBomb((int) (Math.random() * (players.getPlayers().size() - players.getEliminatedPlayers().size())));
+        } while(players.getEliminatedPlayers().contains(players.getPlayerHoldingBomb()) && players.getPlayerHoldingBomb() != -1);
+        System.out.println("Player holding bomb: " + players.getPlayerHoldingBomb());
+        p1Switched = players.getPlayerHoldingBomb();
+        p2Switched = players.getPlayerHoldingBomb();
         players.setGameLength(gameLength);
 		players.setStartTime(System.currentTimeMillis());
 		for(BufferedOutputStream out : outputStreams) {
@@ -194,7 +200,7 @@ class MasterClientHandler extends Thread
         players.eliminatedPlayers.add(playerNum);
 
         for(ClientHandler client : clientHandlers) {
-            if(client == null)
+            if(client == null || !client.isAlive())
             continue;
             
             client.sendPotatoExploded(playerNum);
