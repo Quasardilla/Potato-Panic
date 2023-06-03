@@ -206,14 +206,18 @@ class ClientHandler extends Thread
 		int otherIndex = players.getPlayerIndicies().get(playerNum);
 		int thisIndex = players.getPlayerIndicies().get(this.playerNum);
 		
-		if(otherIndex < thisIndex) {
-			thisIndex--;
+		System.out.println("Player " + this.playerNum + " is sending potato switch of player " + playerNum + ".");
+		
+		if(otherIndex > thisIndex) {
+			otherIndex--;
 		}
 		else if(otherIndex == thisIndex)
-			thisIndex = 255;
+			otherIndex = 255;
+		
+		System.out.println("Player " + this.playerNum + " is actually sending " + otherIndex + ".");
 
 		out.write(0x07);
-		out.write(thisIndex);
+		out.write(otherIndex);
 		out.flush();
 
 		recentlySwitched = true;
@@ -223,14 +227,18 @@ class ClientHandler extends Thread
 		int otherIndex = players.getPlayerIndicies().get(playerNum);
 		int thisIndex = players.getPlayerIndicies().get(this.playerNum);
 
+		System.out.println("Player " + this.playerNum + " is sending potato explode of player " + playerNum + ".");
+
 		if(otherIndex > thisIndex) {
-			thisIndex--;
+			otherIndex--;
 		}
 		else if(otherIndex == thisIndex)
-			thisIndex = 255; 
+			otherIndex = 255; 
+
+		System.out.println("Player " + this.playerNum + " is actually sending " + otherIndex + ".");
 
 		out.write(0x08);
-		out.write(thisIndex);
+		out.write(otherIndex);
 		out.flush();
 
 		recentlySwitched = true;

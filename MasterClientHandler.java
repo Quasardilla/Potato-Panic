@@ -74,11 +74,11 @@ class MasterClientHandler extends Thread
                         !players.isEliminated(players.getPlayerNumFromIndex(i)) && !players.isEliminated(players.getPlayerNumFromIndex(j))) {
                             // if(!(i == p1Switched && j == p2Switched)) {
 
-                            System.out.println(i + ", " + p1Switched);
-                            System.out.println(j + ", " + p2Switched);
-                            System.out.println(i == p1Switched ^ j == p2Switched);
+                            // System.out.println(i + ", " + p1Switched);
+                            // System.out.println(j + ", " + p2Switched);
+                            // System.out.println(i == p1Switched ^ j == p2Switched);
                             if(i == p1Switched ^ j == p2Switched) {
-                                System.out.println("player holding bomb currently" + players.playerHoldingBomb);
+                                System.out.println("player holding bomb currently " + players.playerHoldingBomb);
                                 
                                 if(players.playerHoldingBomb == i) {
                                     potatoSwitched(j);
@@ -90,7 +90,7 @@ class MasterClientHandler extends Thread
                                 }
                                 p1Switched = i;
                                 p2Switched = j;
-                                System.out.println("player holding bomb after switch" + players.playerHoldingBomb);
+                                System.out.println("player holding bomb after switch " + players.playerHoldingBomb);
                             }
                         }
                         else if(i == p1Switched && j == p2Switched){
