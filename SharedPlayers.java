@@ -18,7 +18,7 @@ public class SharedPlayers implements Serializable{
     public synchronized void addPlayer(PlayerInfo player) {
         playerInfos.add(player);
         players.add(new PlayerLite(0, 0));
-        playerIndicies.add(players.size() - 1);
+        playerIndicies.add(playerInfos.size() - 1);
 
         System.out.println("Player " + (players.size() - 1) + " added");
 
@@ -36,6 +36,10 @@ public class SharedPlayers implements Serializable{
 
     public ArrayList<PlayerLite> getPlayers() {
         return players;
+    }
+
+    public ArrayList<PlayerInfo> getPlayerInfos() {
+        return playerInfos;
     }
 
     public ArrayList<Integer> getEliminatedPlayers() {
@@ -88,13 +92,16 @@ public class SharedPlayers implements Serializable{
 
     public synchronized int removePlayer(int playerNum) {
         int index = playerIndicies.get(playerNum);
-        if(gameStarted)
-            players.remove(index);
-        playerInfos.remove(index);
+        System.out.println("attempting to remove player " + playerNum + " at index " + index);
 
         for(int i = index + 1; i < playerIndicies.size(); i++) {
             playerIndicies.set(i, playerIndicies.get(i) - 1);
         }
+
+        if(gameStarted)
+            players.remove(index);
+        playerInfos.remove(index);
+
 
         if(eliminatedPlayers.contains(index))
             eliminatedPlayers.remove(eliminatedPlayers.indexOf(index));

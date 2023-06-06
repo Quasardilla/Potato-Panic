@@ -31,6 +31,9 @@ class ClientHandler extends Thread
 		this.sharedThread = sharedThread;
 		this.players = players;
 
+		if(players.playerIndicies.size() == 0)
+			playerCount = 0;
+
 		playerNum = playerCount;
 		acknowledgedPlayers = playerNum;
         playerCount++;
@@ -56,6 +59,8 @@ class ClientHandler extends Thread
 	public void run()
 	{
 		System.out.println("Player " + playerNum + " Connected");
+		System.out.println("started new loop as " + this.getName());
+
 
 		while (!socket.isClosed())
 		{
@@ -98,10 +103,10 @@ class ClientHandler extends Thread
                         sharedThread.startGame();
                         break;
                     default:
-                        System.err.println("An invalid message was recieved from player " + playerNum + ".");
-						System.out.println(type);
-						sharedThread.playerDisconnected(players.getPlayerIndicies().get(playerNum));
-                        close();
+                        // System.err.println("An invalid message was recieved from player " + playerNum + ".");
+						// System.out.println(type);
+						// sharedThread.playerDisconnected(players.getPlayerIndicies().get(playerNum));
+                        // close();
                         break;
                 }
 			} catch (SocketException e) {
@@ -111,6 +116,8 @@ class ClientHandler extends Thread
 				close();
 			} catch (Exception e) { e.printStackTrace(); }
 		}
+
+		System.out.println("broke out of loop as " + this.getName());
 
 		return;
 

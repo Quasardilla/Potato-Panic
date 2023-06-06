@@ -72,11 +72,11 @@ class MasterClientHandler extends Thread
                         Rectangle p2 = new Rectangle(playerLites.get(j).x, playerLites.get(j).y, 50, 50);
                         if(p1.intersects(p2) && players.gameStarted  && 
                         !players.isEliminated(players.getPlayerNumFromIndex(i)) && !players.isEliminated(players.getPlayerNumFromIndex(j))) {
-                            // if(!(i == p1Switched && j == p2Switched)) {
-
-                            // System.out.println(i + ", " + p1Switched);
-                            // System.out.println(j + ", " + p2Switched);
-                            // System.out.println(i == p1Switched ^ j == p2Switched);
+                            /* Oh my, a XOR operator?!
+                            / This is to make sure that the bomb
+                            / doesn't switch between the same two
+                            / players while they're still touching
+                            */
                             if(i == p1Switched ^ j == p2Switched) {
                                 System.out.println("player holding bomb currently " + players.playerHoldingBomb);
                                 
@@ -167,23 +167,31 @@ class MasterClientHandler extends Thread
     }
 
     public void playerDisconnected(int playerNum) throws IOException {
+        System.out.println("Player " + playerNum + " disconnected");
         outputStreams.set(playerNum, null);
         clientHandlers.set(playerNum, null);
 
-        for(ClientHandler client : clientHandlers) {
-            if(client == null)
-            continue;
+        System.out.println("removed output stream and clienthandler");
 
-			client.sendDisconnectedPlayer(playerNum);
+        for(ClientHandler client : clientHandlers) {
+            if(client != null && client.isAlive())
+			    client.sendDisconnectedPlayer(playerNum);
+            // continue;
+
 		}
 
-        players.removePlayer(playerNum);
+        System.out.println("sent disconnected player to all clients");
 
-        if(players.getPlayers().size() < 1) {
+        
+        System.out.println(players.getPlayerInfos().size() + " currently connected");
+        
+        if(players.getPlayerInfos().size() < 2) 
             players.wipe();
-        }
-
-        System.out.println("Player " + playerNum + " disconnected");
+        else
+            players.removePlayer(playerNum);
+        
+        System.out.println(players.getPlayerInfos().size() + " players left");
+        
     }
 
     public void potatoSwitched(int playerNum) throws IOException {

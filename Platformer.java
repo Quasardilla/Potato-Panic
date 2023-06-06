@@ -1,4 +1,4 @@
-import java.awt.BasicStroke;
+ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -64,15 +64,8 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     serverList, addServer, editServer,
     connecting, connectionError, threadStarted, inServerRoom;
 
-    private Button playButton;
-    private Button practiceButton;
-    private Button settingsButton;
-    private TextBox serverNameBox;
-    private TextBox serverIPBox;
-    private TextBox usernameBox;
-    private TextBox colorBox;
-    private Button doneButton;
-    private Button settingsDoneButton;
+    private Button playButton, practiceButton, settingsButton, doneButton, settingsDoneButton, backButton, startButton;
+    private TextBox serverNameBox, serverIPBox, usernameBox, colorBox;
     private ArrayList<ServerObject> servers;
     private ArrayList<Button> serverButtons;
     private ArrayList<Button> serverOptionButtons = new ArrayList<Button>();
@@ -130,6 +123,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         settingsDoneButton = new Button(buttonX, PREF_H - 400, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight() + 10, largeFont.getSize(), largeFont, str, Color.WHITE, Color.BLACK);
         str = "Done";
         doneButton = new Button(buttonX, PREF_H - 400, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight() + 10, largeFont.getSize(), largeFont, str, Color.WHITE, Color.BLACK);
+        str = "Back";
+        backButton = new Button(buttonX, PREF_H - 400, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight() + 10, largeFont.getSize(), largeFont, str, Color.WHITE, Color.BLACK);
+        str = "Start";
+        startButton = new Button(buttonX, PREF_H - 200, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight() + 10, largeFont.getSize(), largeFont, str, Color.WHITE, Color.BLACK);
 
         str = "Play";
         metrics = getFontMetrics(giantFont);
@@ -166,6 +163,14 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         serverIPBox.setGraphics(g2);
         doneButton.setGraphics(g2);
         settingsDoneButton.setGraphics(g2);
+        backButton.setGraphics(g2);
+        startButton.setGraphics(g2);
+
+        if(t != null && t.isAlive())
+            threadStarted = true;
+        else
+            threadStarted = false;
+        
 
         for(Button b : serverButtons) {
             b.setGraphics(g2);
@@ -298,7 +303,48 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         }
 
         if(inServerRoom || threadStarted && !t.getGameStarted()) {
+            int margin = 50;
+            g2.setFont(mediumFont);
+            metrics = g2.getFontMetrics();
+            g2.setColor(Color.BLACK);
 
+            int initX = margin + 20;
+            int initY = margin + 80;
+            int hGap = 20;
+            int vGap = 180;
+
+            ArrayList<PlayerInfo> infos = t.getPlayerInfos();
+
+            g2.setColor(playerInfo.getColor());
+            g2.fillRect(initX, initY, 200, 200);
+            g2.setColor(Color.BLACK);
+            g2.drawString(playerInfo.getName(), initX + (metrics.stringWidth(playerInfo.getName()) / 2), initY - (metrics.getHeight() / 2) - 20);
+
+            for(int i = 1; i < infos.size() + 1; i++) {
+                int x = initX + (i % 8) * 200 + (i % 8) * hGap;
+                int y = initY + (i / 8) * 100 + (i / 8) * vGap;
+                PlayerInfo info = infos.get(i - 1);
+
+                g2.setColor(info.getColor());
+                g2.fillRect(x, y, 200, 200);
+                g2.setColor(Color.BLACK);
+                g2.drawString(info.getName(), x + (metrics.stringWidth(info.getName()) / 2), y - (metrics.getHeight() / 2) - 20);
+            }   
+
+            if(t.getPlayerInfos().size() < 1) {
+                startButton.backColor = Color.GRAY;
+                startButton.textColor = Color.LIGHT_GRAY;
+                startButton.draw();
+            }
+            else {
+                startButton.backColor = Color.BLACK;
+                startButton.textColor = Color.WHITE;
+                startButton.draw();
+            }
+
+            g2.setColor(Color.BLACK);
+            g2.setStroke(new BasicStroke(5));
+            g2.drawRect(margin, margin, PREF_W - (margin * 2), PREF_H - (margin * 2) - 200);
         }
 
         if(threadStarted && t.getGameStarted()) {
@@ -437,13 +483,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             resetPlatforms();
         }
 
-        if(practicing || t != null) {
-            if(e.getKeyCode() == KeyEvent.VK_S)
-                try {
-                    t.sendStartGame();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+        if(practicing) {
             for(int i : jumpKeys)
                 if(e.getKeyCode() == i)
                     player.jump();
@@ -571,6 +611,17 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                 }
             }
     
+            if(inServerRoom || threadStarted && !t.getGameStarted()) {
+                if(playButton.mouseClick(e.getX(), e.getY())) {
+                    System.out.println("Starting game!");
+                    try {
+                        t.sendStartGame();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+
             if(editServer || addServer) {
                 serverNameBox.mouseClick(e.getX(), e.getY());
                 serverIPBox.mouseClick(e.getX(), e.getY());

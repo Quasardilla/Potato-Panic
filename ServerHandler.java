@@ -83,7 +83,6 @@ class ServerHandler extends Thread
             try {
                 int type = in.read();
 
-                // System.out.println(type);
                 switch(type) {
                     case 0x01:
                         removePlayer();
@@ -134,8 +133,8 @@ class ServerHandler extends Thread
                         // System.out.println("Type: " + type);
                         // for(int i = 0; i < 20; i++)
                         //     System.out.println(in.read());
-                        // close();
-                        // System.out.println("irregular type: " + type);
+                        close();
+                        System.out.println("irregular type: " + type);
                         break;
                 }
 
@@ -152,6 +151,9 @@ class ServerHandler extends Thread
 
             ping = (int) (t2 - t1);
 		}
+
+        System.out.println("ServerHandler closed");
+        gameStarted = false;
 
 	}
 
