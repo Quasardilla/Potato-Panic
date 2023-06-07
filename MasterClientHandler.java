@@ -20,8 +20,10 @@ class MasterClientHandler extends Thread
     protected SharedPlayers players;
     private boolean bombIntermission = false;
     private int p1Switched = -1, p2Switched = -1;
-    private short gameLength = 20;
+    private short gameLength = 200;
     private short intermissionLength = 5;
+    private long lastBombSwitch = 0;
+    private int acceptableBombSwitchGap = 500;
 
 	// Constructor
 	public MasterClientHandler(ArrayList<BufferedOutputStream> outputStreams, ArrayList<ClientHandler> clientHandlers, SharedPlayers players)
@@ -66,36 +68,56 @@ class MasterClientHandler extends Thread
                 }
 
                 ArrayList<PlayerLite> playerLites = players.getPlayers();
-                for(int i = 0; i < playerLites.size(); i++) {
-                    Rectangle p1 = new Rectangle(playerLites.get(i).x, playerLites.get(i).y, 50, 50);
-                    for(int j = i + 1; j < playerLites.size(); j++) {
-                        Rectangle p2 = new Rectangle(playerLites.get(j).x, playerLites.get(j).y, 50, 50);
-                        if(p1.intersects(p2) && players.gameStarted  && 
-                        !players.isEliminated(players.getPlayerNumFromIndex(i)) && !players.isEliminated(players.getPlayerNumFromIndex(j))) {
-                            // if(!(i == p1Switched && j == p2Switched)) {
 
-                            // System.out.println(i + ", " + p1Switched);
-                            // System.out.println(j + ", " + p2Switched);
-                            // System.out.println(i == p1Switched ^ j == p2Switched);
-                            if(i == p1Switched ^ j == p2Switched) {
-                                System.out.println("player holding bomb currently " + players.playerHoldingBomb);
-                                
-                                if(players.playerHoldingBomb == i) {
-                                    potatoSwitched(j);
-                                    players.playerHoldingBomb = j;
+                /*
+                 * While I have the recently switched check, I still
+                 * need to make sure there is a cooldown between switches,
+                 * as 3 players can form a cycle of bomb switches, which 
+                 * the recently switched variables cannot protect against.
+                 * I believe 500 ms is an appropriate amount of time as it
+                 * it short enough for a quick switch, but long enough
+                 * where it won't flood the client with switched messages
+                 * when the bomb falls into a switch cycle.
+                 */
+                if(System.currentTimeMillis() - lastBombSwitch > acceptableBombSwitchGap) {
+                    for(int i = 0; i < playerLites.size(); i++) {
+                        Rectangle p1 = new Rectangle(playerLites.get(i).x, playerLites.get(i).y, 50, 50);
+                        for(int j = i + 1; j < playerLites.size(); j++) {
+                            Rectangle p2 = new Rectangle(playerLites.get(j).x, playerLites.get(j).y, 50, 50);
+                            if(p1.intersects(p2) && players.gameStarted  && 
+                            !players.isEliminated(players.getPlayerNumFromIndex(i)) && !players.isEliminated(players.getPlayerNumFromIndex(j))) {
+                                /*
+                                 * Oh my, a XOR operator!? This works because I 
+                                 * don't want the recently switched players to 
+                                 * switch again while they're still touching,
+                                 * but if the player who has the bomb (who has
+                                 * to be one of the recently switched numbers)
+                                 * touches a player who wasnt recently switched,
+                                 * the condition returns true because XOR
+                                 */
+                                if(i == p1Switched ^ j == p2Switched) {
+                                    System.out.println("player holding bomb currently " + players.playerHoldingBomb);
+                                    
+                                    if(players.playerHoldingBomb == i) {
+                                        potatoSwitched(j);
+                                        players.playerHoldingBomb = j;
+                                    }
+                                    else if(players.playerHoldingBomb == j) {
+                                        potatoSwitched(i);
+                                        players.playerHoldingBomb = i;
+                                    }
+                                    p1Switched = i;
+                                    p2Switched = j;
+
+                                    lastBombSwitch = System.currentTimeMillis();
+
+                                    System.out.println("player holding bomb after switch " + players.playerHoldingBomb);
                                 }
-                                else if(players.playerHoldingBomb == j) {
-                                    potatoSwitched(i);
-                                    players.playerHoldingBomb = i;
-                                }
-                                p1Switched = i;
-                                p2Switched = j;
-                                System.out.println("player holding bomb after switch " + players.playerHoldingBomb);
                             }
-                        }
-                        else if(i == p1Switched && j == p2Switched){
-                            p1Switched = players.getPlayerHoldingBomb();
-                            p2Switched = players.getPlayerHoldingBomb();
+                            else if(i == p1Switched && j == p2Switched){
+                                p1Switched = players.getPlayerHoldingBomb();
+                                p2Switched = players.getPlayerHoldingBomb();
+                            }
                         }
                     }
                 }

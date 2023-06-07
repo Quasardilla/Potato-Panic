@@ -45,7 +45,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private static double lastFPSCheck = 0;
     private static double currentFPS = 0;
 
-    private double sidewaysVelocity = 900;
+    private double sidewaysVelocity = 1300;
 
     private boolean left, right;
     private int[] leftKeys = new int[] {KeyEvent.VK_LEFT, KeyEvent.VK_A};
@@ -96,13 +96,38 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         setFocusable(true);
         requestFocus();
         
+        //Bounding Box Platforms
+        //top
         platforms.add(new Platform(-3000, 1000, 8000, 600));
-        platforms.add(new Platform(-3000, -1000, 1200, 2000));
-        platforms.add(new Platform(4000 - 200, -1000, 1200, 2000));
+        //bottom
         platforms.add(new Platform(-3000, -1600, 8000, 600));
-        platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W / 2, 75));
-        platforms.add(new Platform(0, PREF_H - 600, PREF_W / 2, 75));
-        platforms.add(new Platform(PREF_W / 2, PREF_H - 900, PREF_W / 2, 75));
+        //left
+        platforms.add(new Platform(-3000, -1000, 1200, 2000));
+        //right
+        platforms.add(new Platform(3800, -1000, 1200, 2000));
+        
+        //Center 3 Stacked Platforms
+        platforms.add(new Platform(720, 650, 700, 100));
+        platforms.add(new Platform(20, 300, 700, 100));
+        platforms.add(new Platform(720, -50, 700, 100));
+        
+        //Left Floating Platform + Attached Walls
+        platforms.add(new Platform(-1200, -400, 970, 100));
+        platforms.add(new Platform(-300, -400, 100, 400));
+        platforms.add(new Platform(-900, -300, 100, 800));
+
+        //Right Floating Platform + Tiny Platforms
+        platforms.add(new Platform(1500, -400, 1000, 100));
+        //first column
+        platforms.add(new Platform(2500, 300, 100, 100));
+        //second column
+        platforms.add(new Platform(2800, 0, 100, 100));
+        platforms.add(new Platform(2800, 600, 100, 100));
+        //third column
+        platforms.add(new Platform(3100, 300, 100, 100));
+        platforms.add(new Platform(3100, -300, 100, 100));
+        //fourth column
+        platforms.add(new Platform(3400, 0, 100, 100));
 
         EasyFontInstaller.installFont();
 
@@ -144,6 +169,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
         servers = readServerFile();
         serverButtons = generateServerButtons(50, 150, PREF_W - 100, 75, servers);
+
     }
     
     public Dimension getPreferredSize() {
@@ -321,7 +347,11 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             if(t.playerHoldingBomb == 255 && !t.playerEliminated) {
                 g2.setColor(Color.RED);
                 g2.fillRect((int) player.getX() - 5, (int) player.getY() - 5, 60, 60);
+                sidewaysVelocity = 1900;
             }
+            else 
+                sidewaysVelocity = 1300;
+                
             player.draw(g2, playerInfo, t.playerEliminated);
             drawOtherPlayers(g2);
 
@@ -399,6 +429,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     @Override
     public void keyPressed(KeyEvent e){
+
+
+        if(e.getKeyCode() == KeyEvent.VK_K)
+        System.out.println(platforms.get(1).getX());
 
         if(e.getKeyCode() == KeyEvent.VK_ESCAPE && t == null && !practicing) {
             if(showSettings) {

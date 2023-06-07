@@ -8,7 +8,7 @@ import javax.swing.ImageIcon;
 
 public class Player extends Sprite {
 
-    private double gravity = 2800, velocity = -1400;
+    private double gravity = 3400, velocity = -1800;
     private int jumpCount = 0;
     protected boolean isJumping = true, isGrounded, wallSliding;
     private Font font = new Font("Mochiy Pop P One", Font.PLAIN, 24);
@@ -92,13 +92,12 @@ public class Player extends Sprite {
     }
 
     public PlayerLite genPlayerLite(Platform p) {
-        // System.out.println("genPlayerLite: " + (int) (x - p.getX()) + ", " + (int) (y - p.getY()));
         return new PlayerLite((int) (x - p.getX()), (int) (y - p.getY()));
     }
 
     public boolean findFloorCollision(ArrayList<Platform> platforms) {
         for(Platform p : platforms) {
-            if(p.intersects(new Player((int) (x), (int) (y + height + 5), width, height)))
+            if(p.intersects(new Player((int) (x), (int) (y), width, height)))
                 return true;
         }
 
@@ -155,7 +154,7 @@ public class Player extends Sprite {
                         adjustPlatforms(platforms, 0, y - (p.getY() + p.getHeight()));
                         break;
                     default:
-                        // System.out.println("Error: Invalid side (dear god)");
+                        System.out.println("Error: Invalid side (dear god)");
                         dy = 0;
                         adjustPlatforms(platforms, 0, y - (p.getY() - height));
                         break;
@@ -164,8 +163,10 @@ public class Player extends Sprite {
         }
 
         if(count == 0) {
-            if (findFloorCollision(platforms))
+            if (findFloorCollision(platforms)) {
                 isGrounded = true;
+                System.out.println("found floor collision");
+            }
             else {
                 wallSliding = false;
                 isGrounded = false;
