@@ -23,6 +23,8 @@ class ServerHandler extends Thread
     protected Platform platform;
 	protected int playerNum;
 	protected static int playerCount = 0;
+    protected String disconnectedMessage = "";
+
 	
 	private static double totalPings = 0;
     private static double lastPPSCheck = 0;
@@ -83,7 +85,6 @@ class ServerHandler extends Thread
             try {
                 int type = in.read();
 
-                // System.out.println(type);
                 switch(type) {
                     case 0x01:
                         removePlayer();
@@ -130,12 +131,12 @@ class ServerHandler extends Thread
                         playerEliminated = true;
                         break;
                     default:
-                        // System.err.println("A fatal error has occured.");
-                        // System.out.println("Type: " + type);
-                        // for(int i = 0; i < 20; i++)
-                        //     System.out.println(in.read());
-                        // close();
-                        // System.out.println("irregular type: " + type);
+                        if(type == -1) {
+                            disconnectedMessage = "A fatal error has occured that has caused the server to disconnect";
+                            close();
+                            break;
+                        }
+                        System.out.println("irregular type: " + type);
                         break;
                 }
 
@@ -145,6 +146,7 @@ class ServerHandler extends Thread
 
             } catch (SocketException e) {
                 System.out.println("Server Disconnected");
+                disconnectedMessage = "Server Disconnected";
                 close();
             } catch (Exception e) { e.printStackTrace(); }
             
@@ -152,6 +154,9 @@ class ServerHandler extends Thread
 
             ping = (int) (t2 - t1);
 		}
+
+        gameStarted = false;
+        System.out.println("ServerHandler closed");
 
 	}
 
@@ -327,4 +332,12 @@ class ServerHandler extends Thread
 	public int getPPS() {
 		return (int) currentPPS;
 	}
+
+    public String getDisconnectedMessage() {
+		return disconnectedMessage;
+	}
+
+    public void resetDisconnectedMessage() {
+        disconnectedMessage = "";
+    }
 }

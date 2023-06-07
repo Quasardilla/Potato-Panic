@@ -18,7 +18,7 @@ public class SharedPlayers implements Serializable{
     public synchronized void addPlayer(PlayerInfo player) {
         playerInfos.add(player);
         players.add(new PlayerLite(0, 0));
-        playerIndicies.add(players.size() - 1);
+        playerIndicies.add(playerInfos.size() - 1);
 
         System.out.println("Player " + (players.size() - 1) + " added");
 
@@ -36,6 +36,10 @@ public class SharedPlayers implements Serializable{
 
     public ArrayList<PlayerLite> getPlayers() {
         return players;
+    }
+
+    public ArrayList<PlayerInfo> getPlayerInfos() {
+        return playerInfos;
     }
 
     public ArrayList<Integer> getEliminatedPlayers() {
@@ -59,8 +63,11 @@ public class SharedPlayers implements Serializable{
     }
 
     public ArrayList<PlayerInfo> getOtherPlayerInfos(int playerNum) {
+        System.out.println(playerNum);
+
         ArrayList<PlayerInfo> otherPlayers = new ArrayList<PlayerInfo>();
         int index = playerIndicies.get(playerNum);
+        System.out.println(index);
 
         for(int i = 0; i < playerInfos.size(); i++) {
             if(i != index)
@@ -88,13 +95,16 @@ public class SharedPlayers implements Serializable{
 
     public synchronized int removePlayer(int playerNum) {
         int index = playerIndicies.get(playerNum);
-        if(gameStarted)
-            players.remove(index);
-        playerInfos.remove(index);
+        System.out.println("- attempting to remove player " + playerNum + " at index " + index);
 
         for(int i = index + 1; i < playerIndicies.size(); i++) {
             playerIndicies.set(i, playerIndicies.get(i) - 1);
         }
+
+        if(gameStarted)
+            players.remove(index);
+        playerInfos.remove(index);
+
 
         if(eliminatedPlayers.contains(index))
             eliminatedPlayers.remove(eliminatedPlayers.indexOf(index));
@@ -144,7 +154,7 @@ public class SharedPlayers implements Serializable{
     }
 
     public void wipe() {
-        System.out.println("Wiping players");
+        System.out.println("- Wiping players");
 
         eliminatedPlayers.clear();
         playerInfos.clear();
