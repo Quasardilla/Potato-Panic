@@ -63,8 +63,11 @@ public class SharedPlayers implements Serializable{
     }
 
     public ArrayList<PlayerInfo> getOtherPlayerInfos(int playerNum) {
+        System.out.println(playerNum);
+
         ArrayList<PlayerInfo> otherPlayers = new ArrayList<PlayerInfo>();
         int index = playerIndicies.get(playerNum);
+        System.out.println(index);
 
         for(int i = 0; i < playerInfos.size(); i++) {
             if(i != index)
@@ -92,7 +95,7 @@ public class SharedPlayers implements Serializable{
 
     public synchronized int removePlayer(int playerNum) {
         int index = playerIndicies.get(playerNum);
-        System.out.println("attempting to remove player " + playerNum + " at index " + index);
+        System.out.println("- attempting to remove player " + playerNum + " at index " + index);
 
         for(int i = index + 1; i < playerIndicies.size(); i++) {
             playerIndicies.set(i, playerIndicies.get(i) - 1);
@@ -151,7 +154,7 @@ public class SharedPlayers implements Serializable{
     }
 
     public void wipe() {
-        System.out.println("Wiping players");
+        System.out.println("- Wiping players");
 
         eliminatedPlayers.clear();
         playerInfos.clear();

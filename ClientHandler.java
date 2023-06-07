@@ -31,12 +31,11 @@ class ClientHandler extends Thread
 		this.sharedThread = sharedThread;
 		this.players = players;
 
-		if(players.playerIndicies.size() == 0)
-			playerCount = 0;
-
 		playerNum = playerCount;
 		acknowledgedPlayers = playerNum;
         playerCount++;
+
+		setName("ClientHandler-" + playerNum);
 	}
 
 
@@ -110,14 +109,16 @@ class ClientHandler extends Thread
                         break;
                 }
 			} catch (SocketException e) {
+				System.out.println("- My client disconnected, and i'm " + this.getName());
 				try {
-					sharedThread.playerDisconnected(players.getPlayerIndicies().get(playerNum));
+					sharedThread.playerDisconnected(playerNum);
 				} catch (IOException e1) {}
 				close();
+				break;
 			} catch (Exception e) { e.printStackTrace(); }
 		}
 
-		System.out.println("broke out of loop as " + this.getName());
+		System.out.println("- broke out of loop as " + this.getName());
 
 		return;
 
@@ -250,4 +251,5 @@ class ClientHandler extends Thread
 
 		recentlySwitched = true;
 	}
+
 }

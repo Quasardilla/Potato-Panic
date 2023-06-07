@@ -78,6 +78,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private Client client;
     private ServerHandler t;
     private IOException connErr;
+    private String errString;
 // 
 
 
@@ -181,6 +182,12 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         }
 
         // g2.drawLine(PREF_W / 2, 0, PREF_W / 2, PREF_W);
+
+        if(t != null && !t.getDisconnectedMessage().equals("")) {
+            connectionError = true;
+            errString = t.getDisconnectedMessage();
+            t.resetDisconnectedMessage();
+        }
 
         if(titleScreen) {
             g2.setFont(giantFont);
@@ -298,11 +305,16 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             metrics = g2.getFontMetrics();
             String str = "Connection Error";
             g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), (PREF_H / 2) - (metrics.getHeight() / 2));
-            str = connErr.getMessage();
+            if(connErr != null)
+                str = connErr.getMessage();
+            else if(errString != null)
+                str = errString;
+            else 
+                str = "Unknown Error";
             g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), (PREF_H / 2) - (metrics.getHeight() / 2) + 50);
         }
 
-        if(inServerRoom || threadStarted && !t.getGameStarted()) {
+        if(threadStarted && !t.getGameStarted() && !t.getDisconnectedMessage().equals("")) {
             int margin = 50;
             g2.setFont(mediumFont);
             metrics = g2.getFontMetrics();
@@ -351,7 +363,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             double dtime = 1/currentFPS;
             if(dtime >= 1 || dtime < 0)
             dtime = 1/FPSCap;
-            
+
             managePlayerHorizontalSpeed(player);
             player.update(dtime);
             
@@ -410,7 +422,8 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             g2.setColor(Color.BLACK);
             metrics = g2.getFontMetrics();
         }
-
+                
+        
         //keep this for program to work
         if (!unlimited)
         {
@@ -446,7 +459,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     @Override
     public void keyPressed(KeyEvent e){
 
-        if(e.getKeyCode() == KeyEvent.VK_ESCAPE && t == null && !practicing) {
+        if(e.getKeyCode() == KeyEvent.VK_ESCAPE && !practicing) {
             if(showSettings) {
                 if(usernameBox.isSelected || colorBox.isSelected) {
                     usernameBox.isSelected = false;
@@ -470,6 +483,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             }
             else if(connectionError) {
                 connectionError = false;
+                errString = "";
                 serverList = true;
             }
             else if(serverList) {
@@ -611,9 +625,8 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                 }
             }
     
-            if(inServerRoom || threadStarted && !t.getGameStarted()) {
+            if(threadStarted && !t.getGameStarted()) {
                 if(playButton.mouseClick(e.getX(), e.getY())) {
-                    System.out.println("Starting game!");
                     try {
                         t.sendStartGame();
                     } catch (IOException e1) {

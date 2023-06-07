@@ -31,6 +31,7 @@ class MasterClientHandler extends Thread
 		this.players = players;
 
         players.setGameLength(gameLength);
+        setName("MasterClientHandler");
 	}
 
 
@@ -108,7 +109,7 @@ class MasterClientHandler extends Thread
     public void startGame() throws IOException {
         System.out.println("Game started");
 
-        if(players.getGameStarted() || players.getPlayers().size() < 2)
+        if(players.getGameStarted() || players.getPlayerInfos().size() < 2)
             return;
 
             bombIntermission = false;
@@ -167,11 +168,11 @@ class MasterClientHandler extends Thread
     }
 
     public void playerDisconnected(int playerNum) throws IOException {
-        System.out.println("Player " + playerNum + " disconnected");
+        System.out.println("- Player " + playerNum + " disconnected");
         outputStreams.set(playerNum, null);
         clientHandlers.set(playerNum, null);
 
-        System.out.println("removed output stream and clienthandler");
+        System.out.println("- removed output stream and clienthandler for player " + playerNum);
 
         for(ClientHandler client : clientHandlers) {
             if(client != null && client.isAlive())
@@ -180,18 +181,14 @@ class MasterClientHandler extends Thread
 
 		}
 
-        System.out.println("sent disconnected player to all clients");
+        System.out.println("- sent disconnected player to all clients");
 
-        
-        System.out.println(players.getPlayerInfos().size() + " currently connected");
-        
+                
         if(players.getPlayerInfos().size() < 2) 
             players.wipe();
         else
             players.removePlayer(playerNum);
-        
-        System.out.println(players.getPlayerInfos().size() + " players left");
-        
+                
     }
 
     public void potatoSwitched(int playerNum) throws IOException {
