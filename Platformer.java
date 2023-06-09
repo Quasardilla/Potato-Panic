@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
@@ -14,6 +15,7 @@ import java.awt.FontMetrics;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -57,12 +59,14 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private Font mediumFont = new Font("Mochiy Pop P One", Font.PLAIN, 24);
     private Font smallFont = new Font("Mochiy Pop P One", Font.PLAIN, 12);
     private FontMetrics metrics;
+
+    private Image banner = new ImageIcon("./img/PotatoPanicBanner.png").getImage().getScaledInstance(1920 / 2, 612 / 2, Image.SCALE_SMOOTH);
     
     private ArrayList<Platform> platforms = new ArrayList<Platform>();
 
     private boolean titleScreen = true, showSettings, practicing, 
     serverList, addServer, editServer,
-    connecting, connectionError, threadStarted, inServerRoom;
+    connecting, connectionError, threadStarted;
 
     private Button playButton, practiceButton, settingsButton, doneButton, settingsDoneButton, backButton, startButton;
     private TextBox serverNameBox, serverIPBox, usernameBox, colorBox;
@@ -193,45 +197,50 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         backButton.setGraphics(g2);
         startButton.setGraphics(g2);
 
-        if(t != null && t.isAlive())
-            threadStarted = true;
-        else
-            threadStarted = false;
         
-
+        if(t != null && t.isAlive())
+        threadStarted = true;
+        else
+        threadStarted = false;
+        
+        
         for(Button b : serverButtons) {
             b.setGraphics(g2);
         }
-
+        
         for(Button b : serverOptionButtons) {
             b.setGraphics(g2);
         }
-
+        
         // g2.drawLine(PREF_W / 2, 0, PREF_W / 2, PREF_W);
-
+        
         if(t != null && !t.getDisconnectedMessage().equals("")) {
             connectionError = true;
             errString = t.getDisconnectedMessage();
             t.resetDisconnectedMessage();
         }
 
+        g2.setColor(new Color(255, 240, 201));
+        g2.fillRect(0, 0, PREF_W, PREF_H);
+        
         if(titleScreen) {
             g2.setFont(giantFont);
             g2.setColor(Color.BLACK);
             metrics = g2.getFontMetrics();
             
-            String str = "Potato Panic";
-            g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), 50);
+            g2.drawImage(banner, (PREF_W / 2) - (banner.getWidth(null) / 2), -30, null);
+            // String str = "Potato Panic";
+            // g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), 50);
             
             g2.setFont(largeFont);
             metrics = g2.getFontMetrics();
 
-            str = playerInfo.getName();
-            g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), 200);
+            String str = playerInfo.getName();
+            g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), 240);
             g2.setColor(Color.BLACK);
-            g2.fillRect((PREF_W / 2) - 130, 245, 260, 260);
+            g2.fillRect((PREF_W / 2) - 130, 275, 260, 260);
             g2.setColor(playerInfo.getColor());
-            g2.fillRect((PREF_W / 2) - 125, 250, 250, 250);
+            g2.fillRect((PREF_W / 2) - 125, 280, 250, 250);
 
             playButton.draw();
             practiceButton.draw();
@@ -241,6 +250,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         }
 
         if(practicing) {
+            g2.setColor(Color.WHITE);
+            g2.fillRect(0, 0, PREF_W, PREF_H);
+
             double dtime = 1/currentFPS;
             if(dtime >= 1 || dtime < 0)
             dtime = 1/FPSCap;
@@ -316,7 +328,6 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                 t.start();
         
                 threadStarted = true;
-                inServerRoom = true;
             }
             else {
                 connectionError = true;
@@ -386,6 +397,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         }
 
         if(threadStarted && t.getGameStarted()) {
+            g2.setColor(Color.WHITE);
+            g2.fillRect(0, 0, PREF_W, PREF_H);
+
             double dtime = 1/currentFPS;
             if(dtime >= 1 || dtime < 0)
             dtime = 1/FPSCap;
@@ -433,7 +447,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             int margin = 50;
             g2.setColor(new Color(0, 0, 0, 200));
             g2.fillRect(0, 0, PREF_W, PREF_H);
-            g2.setColor(Color.WHITE);
+            g2.setColor(new Color(255, 240, 201));
             g2.fillRect(margin, margin, PREF_W - (margin * 2), PREF_H - (margin * 2));
 
             settingsButton.draw();
@@ -779,42 +793,52 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         File file = new File("./player.data");
         String name = "Player";
         Color color = Color.GRAY;
-
         try {
-            Scanner sc = new Scanner(file);
-            if(!sc.hasNextLine()) {
-                sc.close();
-                playerInfo = new PlayerInfo("Player", Color.GRAY);
-                usernameBox.text = playerInfo.getName();
-                colorBox.text = "#" + colorToHex(playerInfo.getColor());
-                refreshPlayerFile();
-                return playerInfo;
-            }
-            name = sc.nextLine();
 
-            if(name.length() > 16)
-                name = name.substring(0, 17);
-
-            int colorNum = 0;
-            try {
-                colorNum = Integer.parseInt(sc.nextLine());
-            } catch (Exception e) {
-                colorNum = Color.GRAY.getRGB();
-            }
-            
-            color = new Color(colorNum);
-            color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
-
-            usernameBox.text = name;
-            colorBox.text = colorToHex(color);
+        if(file.createNewFile())
+        {
+            playerInfo = new PlayerInfo("Player", Color.GRAY);
+            refreshPlayerFile();
+        }   
+        else {
+                Scanner sc = new Scanner(file);
+                if(!sc.hasNextLine()) {
+                    sc.close();
+                    playerInfo = new PlayerInfo("Player", Color.GRAY);
+                    usernameBox.text = playerInfo.getName();
+                    colorBox.text = "#" + colorToHex(playerInfo.getColor());
+                    refreshPlayerFile();
+                    return playerInfo;
+                }
+                name = sc.nextLine();
     
-            sc.close();
+                if(name.length() > 16)
+                    name = name.substring(0, 17);
+    
+                    int colorNum = 0;
+                try {
+                    colorNum = Integer.parseInt(sc.nextLine());
+                } catch (Exception e) {
+                    colorNum = Color.GRAY.getRGB();
+                }
+                
+                color = new Color(colorNum);
+                color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
+    
+                usernameBox.text = name;
+                colorBox.text = colorToHex(color);
+        
+                sc.close();
+            } 
+            
+            
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
         return new PlayerInfo(name, color);
     }
 
@@ -839,18 +863,26 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         File file = new File("./servers.data");
         ArrayList<ServerObject> servers = new ArrayList<ServerObject>();
 
-        
-        System.out.println(file.getAbsolutePath());
         try {
-            Scanner sc = new Scanner(file);
-            while(sc.hasNextLine()) {
-                String name = sc.nextLine();
-                String ip = sc.nextLine();
-                short port = Short.parseShort(sc.nextLine());
-                servers.add(new ServerObject(name, ip, port));
+            if(file.createNewFile()) 
+                return servers; 
+            else {
+                
+                System.out.println(file.getAbsolutePath());
+                try {
+                    Scanner sc = new Scanner(file);
+                    while(sc.hasNextLine()) {
+                        String name = sc.nextLine();
+                        String ip = sc.nextLine();
+                        short port = Short.parseShort(sc.nextLine());
+                        servers.add(new ServerObject(name, ip, port));
+                    }
+                    sc.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
-            sc.close();
-        } catch (FileNotFoundException e) {
+        } catch(IOException e) {
             e.printStackTrace();
         }
 
