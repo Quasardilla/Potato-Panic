@@ -20,7 +20,7 @@ class MasterClientHandler extends Thread
     protected SharedPlayers players;
     private boolean bombIntermission = false;
     private int p1Switched = -1, p2Switched = -1;
-    private short gameLength = 200;
+    private short gameLength = 30;
     private short intermissionLength = 5;
     private long lastBombSwitch = 0;
     private int acceptableBombSwitchGap = 500;

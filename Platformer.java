@@ -162,7 +162,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         str = "Play";
         metrics = getFontMetrics(giantFont);
         playButton = new Button(buttonX, 600, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
-        str = "Pratice";
+        str = "Practice";
         practiceButton = new Button(buttonX, 750, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
         str = "";
         buttonWidth = 75;
@@ -350,7 +350,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), (PREF_H / 2) - (metrics.getHeight() / 2) + 50);
         }
 
-        if(threadStarted && !t.getGameStarted() && !t.getDisconnectedMessage().equals("")) {
+        if(threadStarted && !t.getGameStarted() && t.getDisconnectedMessage().equals("")) {
             int margin = 50;
             g2.setFont(mediumFont);
             metrics = g2.getFontMetrics();
@@ -542,7 +542,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             resetPlatforms();
         }
 
-        if(practicing) {
+        if(practicing || threadStarted && t.getGameStarted()) {
             for(int i : jumpKeys)
                 if(e.getKeyCode() == i)
                     player.jump();
@@ -678,6 +678,13 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                         e1.printStackTrace();
                     }
                 }
+
+                if(startButton.mouseClick(e.getX(), e.getY()))
+                    try {
+                        t.sendStartGame();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
             }
 
             if(editServer || addServer) {
