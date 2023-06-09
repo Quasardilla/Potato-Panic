@@ -61,6 +61,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private FontMetrics metrics;
 
     private Image banner = new ImageIcon("./img/PotatoPanicBanner.png").getImage().getScaledInstance(1920 / 2, 612 / 2, Image.SCALE_SMOOTH);
+    private Image settings = new ImageIcon("./img/Settings.png").getImage().getScaledInstance(75, 75, Image.SCALE_SMOOTH);
     
     private ArrayList<Platform> platforms = new ArrayList<Platform>();
 
@@ -229,8 +230,6 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             metrics = g2.getFontMetrics();
             
             g2.drawImage(banner, (PREF_W / 2) - (banner.getWidth(null) / 2), -30, null);
-            // String str = "Potato Panic";
-            // g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), 50);
             
             g2.setFont(largeFont);
             metrics = g2.getFontMetrics();
@@ -246,7 +245,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             practiceButton.draw();
 
             if(!showSettings)
-                settingsButton.draw();
+                g2.drawImage(settings, (int) settingsButton.x, (int) settingsButton.y, null);
         }
 
         if(practicing) {
@@ -450,7 +449,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             g2.setColor(new Color(255, 240, 201));
             g2.fillRect(margin, margin, PREF_W - (margin * 2), PREF_H - (margin * 2));
 
-            settingsButton.draw();
+            g2.fillRect((int) settingsButton.x, (int) settingsButton.y, (int) settingsButton.width, (int) settingsButton.height);
+            g2.drawImage(settings, (int) settingsButton.x, (int) settingsButton.y, null);
+
             settingsDoneButton.draw();
             usernameBox.draw();
             colorBox.draw();
