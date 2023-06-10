@@ -1,7 +1,9 @@
-package Font;
+package font;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.awt.GraphicsEnvironment;
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -16,7 +18,7 @@ public class EasyFontInstaller{
         {
             if(!file.list()[i].equals("EasyFontInstaller.java"))
             {
-                File fontFile = new File("./Font/" + file.list()[i]);
+                File fontFile = new File("./font/" + file.list()[i]);
                 GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
                 try {
                     ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, fontFile));
@@ -28,11 +30,16 @@ public class EasyFontInstaller{
     }
     public static void installFont(String fontfilename) 
     {
-        File fontFile = new File("./Font/" + fontfilename);
+        File fontFile = new File("./font/" + fontfilename);
+
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         try {
             ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, fontFile));
-        } catch (FontFormatException e) {} catch (IOException e) {}
+        } catch (FontFormatException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     public static void printAll()

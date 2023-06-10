@@ -1,4 +1,4 @@
- import java.awt.BasicStroke;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -20,9 +20,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import Font.EasyFontInstaller;
 import UI.Button;
 import UI.TextBox;
+import font.EasyFontInstaller;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -128,7 +128,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         //fourth column
         platforms.add(new Platform(3400, 0, 100, 100));
 
-        EasyFontInstaller.installFont();
+        EasyFontInstaller.installFont("MochiyPopPOne-Regular.ttf");
 
         metrics = getFontMetrics(largeFont);
         int buttonWidth = 400;
