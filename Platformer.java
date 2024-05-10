@@ -22,7 +22,7 @@ import javax.swing.SwingUtilities;
 
 import UI.Button;
 import UI.TextBox;
-import font.EasyFontInstaller;
+import Font.EasyFontInstaller;
 
 import java.io.File;
 import java.io.FileNotFoundException;
