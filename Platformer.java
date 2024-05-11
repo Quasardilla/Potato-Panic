@@ -338,11 +338,13 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
         if(connectionError) { 
             g2.setFont(mediumFont);
+            g2.setColor(new Color(0, 0, 0));
             metrics = g2.getFontMetrics();
-            String str = "Connection Error";
+            String str = "Connection Error:";
             g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), (PREF_H / 2) - (metrics.getHeight() / 2));
+            System.out.println(connErr);
             if(connErr != null)
-                str = connErr.getMessage();
+                str = connErr.toString();
             else if(errString != null)
                 str = errString;
             else 
