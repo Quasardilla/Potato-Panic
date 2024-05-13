@@ -95,38 +95,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         setFocusable(true);
         requestFocus();
         
-        //Bounding Box Platforms
-        //top
-        platforms.add(new Platform(-3000, 1000, 8000, 600));
-        //bottom
-        platforms.add(new Platform(-3000, -1600, 8000, 600));
-        //left
-        platforms.add(new Platform(-3000, -1000, 1200, 2000));
-        //right
-        platforms.add(new Platform(3800, -1000, 1200, 2000));
-        
-        //Center 3 Stacked Platforms
-        platforms.add(new Platform(720, 650, 700, 100));
-        platforms.add(new Platform(20, 300, 700, 100));
-        platforms.add(new Platform(720, -50, 700, 100));
-        
-        //Left Floating Platform + Attached Walls
-        platforms.add(new Platform(-1200, -400, 970, 100));
-        platforms.add(new Platform(-300, -400, 100, 400));
-        platforms.add(new Platform(-900, -300, 100, 800));
-
-        //Right Floating Platform + Tiny Platforms
-        platforms.add(new Platform(1500, -400, 1000, 100));
-        //first column
-        platforms.add(new Platform(2500, 300, 100, 100));
-        //second column
-        platforms.add(new Platform(2800, 0, 100, 100));
-        platforms.add(new Platform(2800, 600, 100, 100));
-        //third column
-        platforms.add(new Platform(3100, 300, 100, 100));
-        platforms.add(new Platform(3100, -300, 100, 100));
-        //fourth column
-        platforms.add(new Platform(3400, 0, 100, 100));
+        resetPlatforms();
 
         EasyFontInstaller.installFont("MochiyPopPOne-Regular.ttf");
 
@@ -357,6 +326,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             g2.setFont(mediumFont);
             metrics = g2.getFontMetrics();
             g2.setColor(Color.BLACK);
+            resetPlatforms();
 
             int initX = margin + 20;
             int initY = margin + 80;
@@ -439,9 +409,11 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         g2.setColor(Color.BLACK);
 
         g2.drawString("FPS: " + currentFPS, 10, 20);
+        g2.drawString("PlayerX " + (platforms.get(0).getX() - player.getX()), 10, 40);
+        g2.drawString("PlayerY " + (platforms.get(0).getY() - player.getY()), 10, 60);
         if(t != null) {
-            g2.drawString("PPS: " + t.getPPS(), 10, 40);
-            g2.drawString("Ping: " + t.getPing(), 10, 60);
+            g2.drawString("PPS: " + t.getPPS(), 10, 80);
+            g2.drawString("Ping: " + t.getPing(), 10, 100);
         }
 
         if(showSettings) {
@@ -935,12 +907,37 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     private void resetPlatforms() {
         platforms.clear();
+        //Bounding Box Platforms
+        //top
         platforms.add(new Platform(-3000, 1000, 8000, 600));
-        platforms.add(new Platform(-3000, -1000, 1200, 2000));
-        platforms.add(new Platform(4000 - 200, -1000, 1200, 2000));
+        //bottom
         platforms.add(new Platform(-3000, -1600, 8000, 600));
-        platforms.add(new Platform(PREF_W / 2, PREF_H - 300, PREF_W / 2, 75));
-        platforms.add(new Platform(0, PREF_H - 600, PREF_W / 2, 75));
-        platforms.add(new Platform(PREF_W / 2, PREF_H - 900, PREF_W / 2, 75));
+        //left
+        platforms.add(new Platform(-3000, -1000, 1200, 2000));
+        //right
+        platforms.add(new Platform(3800, -1000, 1200, 2000));
+        
+        //Center 3 Stacked Platforms
+        platforms.add(new Platform(720, 650, 700, 100));
+        platforms.add(new Platform(20, 300, 700, 100));
+        platforms.add(new Platform(720, -50, 700, 100));
+        
+        //Left Floating Platform + Attached Walls
+        platforms.add(new Platform(-1200, -400, 970, 100));
+        platforms.add(new Platform(-300, -400, 100, 400));
+        platforms.add(new Platform(-900, -300, 100, 800));
+
+        //Right Floating Platform + Tiny Platforms
+        platforms.add(new Platform(1500, -400, 1000, 100));
+        //first column
+        platforms.add(new Platform(2500, 300, 100, 100));
+        //second column
+        platforms.add(new Platform(2800, 0, 100, 100));
+        platforms.add(new Platform(2800, 600, 100, 100));
+        //third column
+        platforms.add(new Platform(3100, 300, 100, 100));
+        platforms.add(new Platform(3100, -300, 100, 100));
+        //fourth column
+        platforms.add(new Platform(3400, 0, 100, 100));
     }
 }
