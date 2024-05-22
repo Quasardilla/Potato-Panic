@@ -47,12 +47,14 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private static double lastFPSCheck = 0;
     private static double currentFPS = 0;
 
-    private double sidewaysVelocity = 1300;
+    private final double PLAYER_VEL = 1300;
+    private final double GHOST_VEL = 1900;
+    private double sidewaysVelocity = PLAYER_VEL;
 
     private boolean left, right;
-    private int[] leftKeys = new int[] {KeyEvent.VK_LEFT, KeyEvent.VK_A};
-    private int[] rightKeys = new int[] {KeyEvent.VK_RIGHT, KeyEvent.VK_D};
-    private int[] jumpKeys = new int[] {KeyEvent.VK_UP, KeyEvent.VK_W};
+    private int[] leftKeys = {KeyEvent.VK_LEFT, KeyEvent.VK_A};
+    private int[] rightKeys = {KeyEvent.VK_RIGHT, KeyEvent.VK_D};
+    private int[] jumpKeys = {KeyEvent.VK_UP, KeyEvent.VK_W};
 
     private Font giantFont = new Font("Mochiy Pop P One", Font.PLAIN, 48);
     private Font largeFont = new Font("Mochiy Pop P One", Font.PLAIN, 32);
@@ -64,10 +66,14 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private Image settings = new ImageIcon("./img/Settings.png").getImage().getScaledInstance(75, 75, Image.SCALE_SMOOTH);
     
     private ArrayList<Platform> platforms = new ArrayList<Platform>();
+    private final double VERTICAL_BOUND_MAX = 4000;
+    private final double VERTICAL_BOUND_MIN = -2000;
+    private final double HORIZONTAL_BOUND_MAX = 3500;
+    private final double HORIZONTAL_BOUND_MIN = -3500;
 
     private boolean titleScreen = true, showSettings, practicing, 
     serverList, addServer, editServer,
-    connecting, connectionError, threadStarted;
+    connecting, connectionError, threadStarted, connThreadStarted;
 
     private Button playButton, practiceButton, settingsButton, doneButton, settingsDoneButton, backButton, startButton;
     private TextBox serverNameBox, serverIPBox, usernameBox, colorBox;
@@ -84,8 +90,6 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private ServerHandler t;
     private IOException connErr;
     private String errString;
-// 
-
 
     public Platformer()
     {
@@ -229,8 +233,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             player.update(dtime);
             
             managePlatformSpeed(platforms);
+            manageMapBounds(player);
             for(Platform p : platforms)
-            p.update(dtime);
+                p.update(dtime);
             
             player.checkCollisions(platforms);
             
@@ -285,24 +290,34 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
         if(connecting) {
             connErr = null;
+            g2.setColor(Color.BLACK);
             g2.setFont(mediumFont);
             metrics = g2.getFontMetrics();
             String str = "Connecting to server...";
-            g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), (PREF_H / 2) - (metrics.getHeight() / 2));
 
-            IOException e = client.startConnection();
-            if(e == null) {
+            if(!connThreadStarted) {
+                Thread connThread = new Thread(client);
+                connThread.start();
+                connThreadStarted = true;
+            }
+            IOException e = client.getErr();
+            if(e == null && client.getClientSocket().isBound()) {
                 t = new ServerHandler(client.getClientSocket(), client.getIn(), client.getOut(), player, playerInfo, platforms.get(0));
                 t.start();
-        
+            
                 threadStarted = true;
+                connThreadStarted = false;
+                connecting = false;
+            }
+            else if (e == null) {
+                g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), (PREF_H / 2) - (metrics.getHeight() / 2));
             }
             else {
+                connecting = false;
+                connThreadStarted = false;
                 connectionError = true;
                 connErr = e;
             }
-
-            connecting = false;
         }
 
         if(connectionError) { 
@@ -311,7 +326,6 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             metrics = g2.getFontMetrics();
             String str = "Connection Error:";
             g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), (PREF_H / 2) - (metrics.getHeight() / 2));
-            System.out.println(connErr);
             if(connErr != null)
                 str = connErr.toString();
             else if(errString != null)
@@ -326,7 +340,6 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             g2.setFont(mediumFont);
             metrics = g2.getFontMetrics();
             g2.setColor(Color.BLACK);
-            resetPlatforms();
 
             int initX = margin + 20;
             int initY = margin + 80;
@@ -379,8 +392,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             player.update(dtime);
             
             managePlatformSpeed(platforms);
+            manageMapBounds(player);
             for(Platform p : platforms)
-            p.update(dtime);
+                p.update(dtime);
             
             player.checkCollisions(platforms);
             
@@ -390,10 +404,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             if(t.playerHoldingBomb == 255 && !t.playerEliminated) {
                 g2.setColor(Color.RED);
                 g2.fillRect((int) player.getX() - 5, (int) player.getY() - 5, 60, 60);
-                sidewaysVelocity = 1900;
+                sidewaysVelocity = GHOST_VEL;
             }
             else 
-                sidewaysVelocity = 1300;
+                sidewaysVelocity = PLAYER_VEL;
                 
             player.draw(g2, playerInfo, t.playerEliminated);
             drawOtherPlayers(g2);
@@ -405,12 +419,26 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight() + 10);
         }
 
+        if(threadStarted && t.getGameEnded()) {
+            gameEnded();
+        }
+
+        if(practicing || t != null) {
+            g2.setColor(new Color(128, 128, 128, 128));
+            g2.fillRect(0, 0, 180, 140);
+            g2.setColor(Color.WHITE);
+        }
+        else {
+            g2.setColor(Color.BLACK);
+        }
+
         g2.setFont(smallFont);
-        g2.setColor(Color.BLACK);
 
         g2.drawString("FPS: " + currentFPS, 10, 20);
-        g2.drawString("PlayerX " + (platforms.get(0).getX() - player.getX()), 10, 40);
-        g2.drawString("PlayerY " + (platforms.get(0).getY() - player.getY()), 10, 60);
+        if(practicing || t != null) {
+            g2.drawString("PlayerX " + (-platforms.get(0).getX() + player.getX() - ((platforms.get(0).getWidth() / 2) - player.getWidth() / 2)), 10, 40);
+            g2.drawString("PlayerY " + (platforms.get(0).getY() - player.getY() - player.getHeight() + (platforms.get(0).getHeight() + 2000)), 10, 60);
+        }
         if(t != null) {
             g2.drawString("PPS: " + t.getPPS(), 10, 80);
             g2.drawString("Ping: " + t.getPing(), 10, 100);
@@ -726,7 +754,6 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     public void mouseExited(MouseEvent e) {}
 
     private void managePlatformSpeed(ArrayList<Platform> platforms) {
-        
         for(Platform p : platforms) {
             p.setDy(-1 * player.getDy());
             p.setDx(-1 * player.getDx());
@@ -741,6 +768,15 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         
         if(!left && !right)
             player.setDx(0);
+    }
+
+    private void manageMapBounds(Player player) {
+        double playerX = -platforms.get(0).getX() + player.getX() - ((platforms.get(0).getWidth() / 2) - player.getWidth() / 2);
+        double playerY = platforms.get(0).getY() - player.getY() - player.getHeight() + (platforms.get(0).getHeight() + 2000);
+        if(playerY < VERTICAL_BOUND_MIN || playerY > VERTICAL_BOUND_MAX || playerX < HORIZONTAL_BOUND_MIN || playerX > HORIZONTAL_BOUND_MAX) {
+            resetPlatforms();
+        }
+
     }
 
     private void drawOtherPlayers(Graphics2D g2) {
@@ -909,13 +945,13 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         platforms.clear();
         //Bounding Box Platforms
         //top
-        platforms.add(new Platform(-3000, 1000, 8000, 600));
-        //bottom
         platforms.add(new Platform(-3000, -1600, 8000, 600));
+        //bottom
+        platforms.add(new Platform(-3000, 1000, 8000, 600));
         //left
-        platforms.add(new Platform(-3000, -1000, 1200, 2000));
+        platforms.add(new Platform(-3000, -1500, 1200, 3000));
         //right
-        platforms.add(new Platform(3800, -1000, 1200, 2000));
+        platforms.add(new Platform(3800, -1500, 1200, 3000));
         
         //Center 3 Stacked Platforms
         platforms.add(new Platform(720, 650, 700, 100));
@@ -939,5 +975,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         platforms.add(new Platform(3100, -300, 100, 100));
         //fourth column
         platforms.add(new Platform(3400, 0, 100, 100));
+    }
+
+    public void gameEnded() {
+        resetPlatforms();
+        t.playerEliminated = false;
     }
 }

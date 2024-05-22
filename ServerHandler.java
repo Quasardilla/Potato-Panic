@@ -19,7 +19,7 @@ class ServerHandler extends Thread
     protected int playerHoldingBomb;
     protected long startTime;
     protected short gameLength;
-    protected boolean gameStarted = false, playerEliminated = false;
+    protected boolean gameStarted = false, playerEliminated = false, gameEnded = false;
     protected Platform platform;
 	protected int playerNum;
 	protected static int playerCount = 0;
@@ -323,6 +323,18 @@ class ServerHandler extends Thread
 
     public boolean getGameStarted() {
         return gameStarted;
+    }
+
+    /**
+     * Used only to figure out if the game recently ended
+     * @return true if the game ended recently
+     */
+    public boolean getGameEnded() {
+        if(gameEnded) {
+            gameEnded = false;
+            return true;
+        }
+        return false;
     }
 
 	public int getPing() {

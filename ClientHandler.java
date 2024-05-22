@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.DatagramSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ class ClientHandler extends Thread
 	protected BufferedOutputStream out;
 	protected MasterClientHandler sharedThread;
 	protected final Socket socket;
+	protected final DatagramSocket UDPsocket;
+	protected ClientUDPHandler UDPHandler;
     protected SharedPlayers players;
 	protected PlayerLite player;	
 	protected int playerNum;
@@ -23,13 +26,16 @@ class ClientHandler extends Thread
 	private boolean recentlySwitched = false;
 
 	// Constructor
-	public ClientHandler(Socket socket, InputStream in, OutputStream out, MasterClientHandler sharedThread, SharedPlayers players)
+	public ClientHandler(Socket socket, DatagramSocket UDPsocket, InputStream in, OutputStream out, MasterClientHandler sharedThread, SharedPlayers players)
 	{
 		this.socket = socket;
+		this.UDPsocket = UDPsocket;
 		this.in = new BufferedInputStream(in);
 		this.out = new BufferedOutputStream(out);
 		this.sharedThread = sharedThread;
 		this.players = players;
+		UDPHandler = new ClientUDPHandler(UDPsocket, players, playerNum);
+		UDPHandler.start();
 
 		playerNum = playerCount;
 		acknowledgedPlayers = playerNum;
@@ -59,7 +65,6 @@ class ClientHandler extends Thread
 	{
 		System.out.println("Player " + playerNum + " Connected");
 		System.out.println("started new loop as " + this.getName());
-
 
 		while (!socket.isClosed())
 		{

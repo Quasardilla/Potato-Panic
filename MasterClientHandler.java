@@ -23,7 +23,7 @@ class MasterClientHandler extends Thread
     private short gameLength = 40;
     private short intermissionLength = 5;
     private long lastBombSwitch = 0;
-    private int acceptableBombSwitchGap = 500;
+    private final int acceptableBombSwitchGap = 500;
 
 	// Constructor
 	public MasterClientHandler(ArrayList<BufferedOutputStream> outputStreams, ArrayList<ClientHandler> clientHandlers, SharedPlayers players)
@@ -62,6 +62,7 @@ class MasterClientHandler extends Thread
                     }
                     players.setGameStarted(false);
                 }
+
                 if(bombIntermission && System.currentTimeMillis() - players.getStartTime() > intermissionLength * 1000) {
                     bombIntermission = false;
                     players.setGameLength(gameLength);
@@ -96,7 +97,6 @@ class MasterClientHandler extends Thread
                                  * touches a player who wasnt recently switched,
                                  * the condition returns true because XOR
                                  */
-                                
                                 if(i == p1Switched ^ j == p2Switched) {
                                     System.out.println("player holding bomb currently " + players.playerHoldingBomb);
                                     
@@ -177,6 +177,13 @@ class MasterClientHandler extends Thread
 
 			out.write(0x06);
 			out.flush();
+		}
+
+        for(ClientHandler client : clientHandlers) {
+            if(client == null)
+            continue;
+
+			client.sendOtherPlayerInfos();
 		}
     }
 

@@ -1,14 +1,17 @@
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
-public class Client {
-    private static Socket clientSocket;
+public class Client implements Runnable {
+    private static Socket clientSocket = new Socket();
+    private final int TIMEOUT = 15;
     protected static BufferedInputStream in;
 	protected static BufferedOutputStream out;
     protected String ip;
     protected int port;
+    public IOException error;
 
     public Client(String ip, int port) {
         this.ip = ip;
@@ -16,9 +19,14 @@ public class Client {
     }
 
 
+    @Override
+    public void run() {
+        error = startConnection();
+    }
+
     public IOException startConnection() {
         try {
-            clientSocket = new Socket(ip, port);
+            clientSocket.connect(new InetSocketAddress(ip, port), TIMEOUT * 1000);
             out = new BufferedOutputStream(clientSocket.getOutputStream());
             in = new BufferedInputStream(clientSocket.getInputStream());
         } catch (IOException e) {
@@ -45,5 +53,9 @@ public class Client {
 
     public Socket getClientSocket() {
         return clientSocket;
+    }
+
+    public IOException getErr() {
+        return error;
     }
 }

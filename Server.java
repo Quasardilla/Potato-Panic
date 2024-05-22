@@ -2,6 +2,7 @@ import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,6 +14,7 @@ public class Server {
 
     protected ServerSocket serverSocket;
     protected Socket clientSocket;
+    protected DatagramSocket clientUDPSocket;
     protected InputStream in;
     protected OutputStream out;
     protected ArrayList<BufferedOutputStream> outputStreams = new ArrayList<BufferedOutputStream>();
@@ -27,6 +29,7 @@ public class Server {
         try {
             serverSocket = new ServerSocket();
             serverSocket.bind(new InetSocketAddress(host, port));
+            clientUDPSocket = new DatagramSocket(port);
         } catch (IOException e) {}
         sharedThread.start();
     }
@@ -49,7 +52,7 @@ public class Server {
             outputStreams.add(new BufferedOutputStream(out));
             in = clientSocket.getInputStream();
 
-            ClientHandler t = new ClientHandler(clientSocket, in, out, sharedThread, players);
+            ClientHandler t = new ClientHandler(clientSocket, clientUDPSocket, in, out, sharedThread, players);
             clientHandlers.add(t);
 
             t.start();
