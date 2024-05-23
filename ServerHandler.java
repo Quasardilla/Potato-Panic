@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ class ServerHandler extends Thread
 	protected final BufferedInputStream in;
 	protected final BufferedOutputStream out;
 	protected final Socket socket;
+    protected final DatagramSocket UDPsocket;
     protected ArrayList<PlayerLite> players = new ArrayList<PlayerLite>();
     protected ArrayList<PlayerInfo> playerInfos = new ArrayList<PlayerInfo>();
     protected ArrayList<Integer> eliminatedPlayers = new ArrayList<Integer>();
