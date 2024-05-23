@@ -23,7 +23,7 @@ class ClientHandler extends Thread
 	protected static int playerCount = 0;
 	protected int acknowledgedPlayers = 0;
 
-	private boolean recentlySwitched = false;
+	public boolean recentlySwitched = false;
 
 	// Constructor
 	public ClientHandler(Socket socket, DatagramSocket UDPsocket, InputStream in, OutputStream out, MasterClientHandler sharedThread, SharedPlayers players)
@@ -34,7 +34,7 @@ class ClientHandler extends Thread
 		this.out = new BufferedOutputStream(out);
 		this.sharedThread = sharedThread;
 		this.players = players;
-		UDPHandler = new ClientUDPHandler(UDPsocket, players, playerNum);
+		UDPHandler = new ClientUDPHandler(this, UDPsocket, players, playerNum);
 		UDPHandler.start();
 
 		playerNum = playerCount;
@@ -84,24 +84,6 @@ class ClientHandler extends Thread
 							out.write(0x09);
 						}
 						sharedThread.playerJoined();
-                        break;
-                    case 0x02:
-						players.setPlayer(playerNum, readPlayer());
-						/*
-						 * "recentlySwitched" exists because when the potato switches,
-						 * it delays the player from having their position registered
-						 * for ~10 ms, the same amount of time the thread sleeps for.
-						 * This time adds up as the potato switches throughout the game, 
-						 * so instead of sending the other player's positions, which 
-						 * would prompt the client to send their position 
-						 * (upholding the delay), I simply catch up the thread by just 
-						 * reading the player's position.
-						 */
-						if(!recentlySwitched) {
-							sendOtherPlayers(players.getOtherPlayers(playerNum));
-						} else
-							recentlySwitched = false;
-
                         break;
                     case 0x05:
                         sharedThread.startGame();
@@ -175,19 +157,6 @@ class ClientHandler extends Thread
 		out.flush();
 		sendPotatoSwitched(players.playerHoldingBomb);
     }
-
-	private void sendOtherPlayers(ArrayList<PlayerLite> otherPlayers) throws IOException {
-
-		out.write(0x04);
-		out.write(otherPlayers.size());
-		for(int i = 0; i < otherPlayers.size(); i++)
-		{
-			PlayerLite otherPlayer = otherPlayers.get(i);
-			out.write(MasterClientHandler.toByteArray(otherPlayer.x));
-			out.write(MasterClientHandler.toByteArray(otherPlayer.y));
-		}
-		out.flush();
-	}
 
 	public void sendOtherPlayerInfos() throws IOException {
 		ArrayList<PlayerInfo> otherPlayers = players.getOtherPlayerInfos(playerNum);

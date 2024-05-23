@@ -256,6 +256,33 @@ class MasterClientHandler extends Thread
         }
 	}
 
+    /**
+     * This method is used to insert an array of bytes into another array of bytes.
+     * 
+     * @param bigArr
+     * @param integratedArr
+     * @param index
+     * @return
+     */
+    public static byte[] insertByteArrays(byte[] bigArr, byte[] integratedArr, int index) {
+        boolean success = true;
+
+        for(int i = index; i < integratedArr.length; i++) {
+            if(i > bigArr.length) {
+                success = false;
+                break;
+            }
+            else if(i - index < integratedArr.length)
+                bigArr[i] = integratedArr[i - index];
+            else {
+                success = false;
+                break;
+            }
+        }
+
+        return success
+    }
+
     public static byte[] toByteArray(short value) {
         return new byte[] {
 			(byte) ((value >> 8) & 0xff),
