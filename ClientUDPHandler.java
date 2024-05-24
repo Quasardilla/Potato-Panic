@@ -21,6 +21,8 @@ public class ClientUDPHandler extends Thread {
         this.playerNum = playerNum;
         this.clientHandler = clientHandler;
 
+        System.out.println("ClientUDPHandler-" + playerNum + " created");
+
         setName("ClientUDPHandler-" + playerNum);
     }
 
@@ -32,12 +34,20 @@ public class ClientUDPHandler extends Thread {
      */
     @Override
     public void run() {
+        System.out.println("ClientUDPHandler-" + playerNum + " started");
+
         while (true) {
             try {
 				Thread.sleep(10);
 			} catch (InterruptedException e) { e.printStackTrace(); }
 			
+            System.out.println("Receiving data");
             byte[] data = receiveData();
+            System.out.println(data[0]);
+            for(int i = 0; i < data.length; i++)
+                System.out.print(data[i] + " ");
+
+            System.out.println();
 
 			try {			
                 switch (data[0]) {
@@ -71,9 +81,9 @@ public class ClientUDPHandler extends Thread {
         byte[] buffer = new byte[playerLiteBufferSize];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         try {
-            System.out.println(UDPSocket);
             UDPSocket.receive(packet);
         } catch (IOException e) { e.printStackTrace(); }
+        System.out.println("Recieved Data");
         ClientIP = packet.getAddress();
         ClientPort = packet.getPort();
         return buffer;
