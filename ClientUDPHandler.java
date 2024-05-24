@@ -3,14 +3,15 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.ArrayList;
 
 public class ClientUDPHandler extends Thread {
     protected DatagramSocket UDPSocket;
     protected ClientHandler clientHandler;
     protected SharedPlayers players;
     private int playerNum;
-    private int playerLiteBufferSize = 16;
-    private int playerLiteListBufferSize = 256;
+    private final int playerLiteBufferSize = 16;
+    private final int playerLiteListBufferSize = 256;
     private InetAddress ClientIP;
     private int ClientPort;
 
@@ -70,6 +71,7 @@ public class ClientUDPHandler extends Thread {
         byte[] buffer = new byte[playerLiteBufferSize];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         try {
+            System.out.println(UDPSocket);
             UDPSocket.receive(packet);
         } catch (IOException e) { e.printStackTrace(); }
         ClientIP = packet.getAddress();
@@ -95,10 +97,14 @@ public class ClientUDPHandler extends Thread {
 		for(int i = 0; i < otherPlayers.size(); i++)
 		{
 			PlayerLite otherPlayer = otherPlayers.get(i);
-			out.write(MasterClientHandler.toByteArray(otherPlayer.x));
-			out.write(MasterClientHandler.toByteArray(otherPlayer.y));
+            MasterClientHandler.insertByteArray(buffer, MasterClientHandler.toByteArray(otherPlayer.x), i * 8);
+            MasterClientHandler.insertByteArray(buffer, MasterClientHandler.toByteArray(otherPlayer.y), (i * 8) + 4);
 		}
-		out.flush();
+        System.out.println("Sending other players");
+        for(int i = 0; i < buffer.length; i++)
+            System.out.print(buffer[i] + " ");
+        DatagramPacket otherPlayersPacket = new DatagramPacket(buffer, buffer.length, ClientIP, ClientPort);
+		UDPSocket.send(otherPlayersPacket);
 	}
 
 }

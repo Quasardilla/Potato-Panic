@@ -29,7 +29,6 @@ public class Server {
         try {
             serverSocket = new ServerSocket();
             serverSocket.bind(new InetSocketAddress(host, port));
-            clientUDPSocket = new DatagramSocket(port);
         } catch (IOException e) {}
         sharedThread.start();
     }
@@ -51,6 +50,9 @@ public class Server {
             out = clientSocket.getOutputStream();
             outputStreams.add(new BufferedOutputStream(out));
             in = clientSocket.getInputStream();
+            System.out.println("meow3");
+            clientUDPSocket = new DatagramSocket(port);
+            System.out.println("meow4");
 
             ClientHandler t = new ClientHandler(clientSocket, clientUDPSocket, in, out, sharedThread, players);
             clientHandlers.add(t);

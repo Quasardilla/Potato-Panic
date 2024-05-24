@@ -3,6 +3,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -12,7 +13,8 @@ class ServerHandler extends Thread
 	protected final BufferedInputStream in;
 	protected final BufferedOutputStream out;
 	protected final Socket socket;
-    protected final DatagramSocket UDPsocket;
+    protected DatagramSocket UDPsocket = null;
+    private ServerUDPHandler UDPHandler = null;
     protected ArrayList<PlayerLite> players = new ArrayList<PlayerLite>();
     protected ArrayList<PlayerInfo> playerInfos = new ArrayList<PlayerInfo>();
     protected ArrayList<Integer> eliminatedPlayers = new ArrayList<Integer>();
@@ -40,8 +42,12 @@ class ServerHandler extends Thread
 	// Constructor
 	public ServerHandler(Socket socket, BufferedInputStream in, BufferedOutputStream out, Player player, PlayerInfo playerInfo, Platform originPlatform)
 	{
-        
+        try {
+            this.UDPsocket = new DatagramSocket(0);
+            this.UDPHandler = new ServerUDPHandler(UDPsocket, socket.getInetAddress(), socket.getPort(), players);
+        } catch (SocketException e) { e.printStackTrace(); }
         this.socket = socket;
+
         this.in = in;
         this.out = out;
         this.player = player;
@@ -269,6 +275,17 @@ class ServerHandler extends Thread
 
     public int readPlayerIndex() throws IOException, ClassNotFoundException {
         return in.read();
+    }
+
+    public static byte[] extractByteArray(byte[] arr, int index, int end) {
+        byte[] newArr = new byte[end - index];
+
+        for(int i = index; i < end; i++)
+        {
+            arr[i - index] = arr[i];
+        }
+
+        return newArr;
     }
 
     public static byte[] toByteArray(int value) {
