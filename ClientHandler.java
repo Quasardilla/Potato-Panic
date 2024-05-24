@@ -34,7 +34,6 @@ class ClientHandler extends Thread
 		this.out = new BufferedOutputStream(out);
 		this.sharedThread = sharedThread;
 		this.players = players;
-		System.out.println("meow1");
 		UDPHandler = new ClientUDPHandler(this, UDPsocket, players, playerNum);
 		UDPHandler.start();
 
@@ -42,7 +41,6 @@ class ClientHandler extends Thread
 		acknowledgedPlayers = playerNum;
         playerCount++;
 
-		System.out.println("meow2");
 		setName("ClientHandler-" + playerNum);
 		System.out.println("ClientHandler-" + playerNum + " created");
 	}
