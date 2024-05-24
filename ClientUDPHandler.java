@@ -38,7 +38,7 @@ public class ClientUDPHandler extends Thread {
 
         while (true) {
             try {
-				Thread.sleep(10);
+				Thread.sleep(5);
 			} catch (InterruptedException e) { e.printStackTrace(); }
 			
             byte[] data = receiveData();
@@ -98,8 +98,6 @@ public class ClientUDPHandler extends Thread {
 
 
 	private void sendOtherPlayers(ArrayList<PlayerLite> otherPlayers) throws IOException {
-        System.out.println("Player " + playerNum + ": " + players.getPlayer(playerNum).toString());
-        System.out.println("Player " + playerNum + "'s arr: " + otherPlayers.toString());
         byte[] buffer = new byte[playerLiteListBufferSize];
         buffer[0] = 0x00;
         buffer[1] = (byte) playerNum;
