@@ -15,17 +15,17 @@ class ServerHandler extends Thread
 	protected final Socket socket;
     protected DatagramSocket UDPsocket = null;
     private ServerUDPHandler UDPHandler = null;
+    protected long startTime;
+    protected short gameLength;
     protected ArrayList<PlayerLite> players = new ArrayList<PlayerLite>();
     protected ArrayList<PlayerInfo> playerInfos = new ArrayList<PlayerInfo>();
     protected ArrayList<Integer> eliminatedPlayers = new ArrayList<Integer>();
+    protected Platform platform;
 	protected Player player;	
 	protected PlayerInfo playerInfo;	
     protected int playerHoldingBomb;
-    protected long startTime;
-    protected short gameLength;
-    protected boolean gameStarted = false, playerEliminated = false, gameEnded = false;
-    protected Platform platform;
 	protected int playerNum;
+    protected boolean gameStarted = false, playerEliminated = false, gameEnded = false;
 	protected static int playerCount = 0;
     protected String disconnectedMessage = "";
 
@@ -100,6 +100,9 @@ class ServerHandler extends Thread
                 int type = in.read();
 
                 switch(type) {
+                    case 0x00:
+                        playerNum = in.read();
+                        break;
                     case 0x01:
                         removePlayer();
                         break;
@@ -155,10 +158,6 @@ class ServerHandler extends Thread
                         break;
                 }
 
-                // if(gameStarted) {
-                //     sendPlayer(player.genPlayerLite(platform));
-                // }
-
             } catch (SocketException e) {
                 e.printStackTrace();
                 System.out.println("Server Disconnected");
@@ -184,15 +183,6 @@ class ServerHandler extends Thread
         } catch (IOException e) { e.printStackTrace(); }
         UDPHandler.close();
     }
-
-    // public void sendPlayer(PlayerLite player) throws IOException, ClassNotFoundException {
-    //     out.write((byte) 0x02);
-    //     byte[] x = toByteArray(player.x);
-    //     byte[] y = toByteArray(player.y);
-    //     out.write(x);
-    //     out.write(y);
-    //     out.flush();
-    // }
 
     public void sendPlayerInfo(PlayerInfo player) throws IOException, ClassNotFoundException {
         System.out.println("sending player info");

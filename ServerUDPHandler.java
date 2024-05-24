@@ -82,6 +82,12 @@ public class ServerUDPHandler extends Thread {
         return buffer;
     }
 
+    /**
+     * Formatted like this:
+     * 0x02 | PlayerNum | 6 empty bytes | 4 bytes for x | 4 bytes for y
+     * @param player
+     * The player to send to the server
+     */
     private void sendPlayerLite(PlayerLite player) {
         byte[] buffer = new byte[playerLiteBufferSize];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, serverIP, serverPort);
@@ -89,8 +95,9 @@ public class ServerUDPHandler extends Thread {
         byte[] x = ServerHandler.toByteArray(player.x);
         byte[] y = ServerHandler.toByteArray(player.y);
         buffer[0] = 0x02;
-        System.arraycopy(x, 0, buffer, 1, x.length);
-        System.arraycopy(y, 0, buffer, 5, y.length);
+        buffer[1] = (byte) serverHandler.playerNum;
+        System.arraycopy(x, 0, buffer, 9, x.length);
+        System.arraycopy(y, 0, buffer, 13, y.length);
 
         try {
             UDPSocket.send(packet);
@@ -103,6 +110,8 @@ public class ServerUDPHandler extends Thread {
             byte[] playerLiteBuffer = new byte[8];
             System.arraycopy(buffer, i, playerLiteBuffer, 0, 8);
             players.add(byteArrToPlayerLite(playerLiteBuffer));
+            if(i == 1)
+                System.out.println("Player 1: " + byteArrToPlayerLite(playerLiteBuffer));
         }
     }
     
@@ -114,6 +123,10 @@ public class ServerUDPHandler extends Thread {
         System.arraycopy(arr, 4, y, 0, 4);
 
         return new PlayerLite(ServerHandler.toInt(x), ServerHandler.toInt(y));
+    }
+
+    public ArrayList<PlayerLite> getPlayers() {
+        return players;
     }
 
 }

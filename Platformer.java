@@ -784,14 +784,17 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         otherPlayers = t.getPlayers();
         otherPlayerInfos = t.getPlayerInfos();
 
-        if(otherPlayers.size() != otherPlayerInfos.size()) {
-            // System.out.println("there are " + otherPlayers.size() + " other players");
-            // System.out.println("but there are " + otherPlayerInfos.size() + " other player infos");
-            return;
-        }
+        // if(otherPlayers.size() != otherPlayerInfos.size()) {
+        //     // System.out.println("there are " + otherPlayers.size() + " other players");
+        //     // System.out.println("but there are " + otherPlayerInfos.size() + " other player infos");
+        //     return;
+        // }
 
         Platform originP = platforms.get(0);
         for(int i = 0; i < otherPlayers.size(); i++) {
+            if(i > otherPlayerInfos.size() - 1)
+                break;
+
             if(t.getEliminatedPlayers().contains(i)) {
                 if(t.playerEliminated)
                     otherPlayers.get(i).draw(g2, originP, otherPlayerInfos.get(i), true);
