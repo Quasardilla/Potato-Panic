@@ -34,7 +34,7 @@ public class ServerUDPHandler extends Thread {
     /** 
      *  <pre>     
      *Message Types: 
-     *  0x02 - PlayerLite Info (For server, player position)
+     *  0x00 - PlayerLite List (For client, player positions)
      *  </pre>
      */
     @Override
