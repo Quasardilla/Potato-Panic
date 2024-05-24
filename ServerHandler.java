@@ -286,17 +286,6 @@ class ServerHandler extends Thread
         return in.read();
     }
 
-    public static byte[] extractByteArray(byte[] arr, int index, int end) {
-        byte[] newArr = new byte[end - index];
-
-        for(int i = index; i < end; i++)
-        {
-            arr[i - index] = arr[i];
-        }
-
-        return newArr;
-    }
-
     public static byte[] toByteArray(int value) {
         return new byte[] {
                 (byte)(value >> 24),

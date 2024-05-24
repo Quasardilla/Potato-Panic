@@ -46,7 +46,6 @@ public class ServerUDPHandler extends Thread {
 			} catch (InterruptedException e) { e.printStackTrace(); }
 			
             if(serverHandler.gameStarted) {
-                System.out.println("Sending PlayerLite");
                 sendPlayerLite(player.genPlayerLite(originPlatform));
 
                 byte[] data = receiveData();
@@ -100,14 +99,21 @@ public class ServerUDPHandler extends Thread {
 
     private void readPlayerLiteList(byte[] buffer) {
         players.clear();
-        for (int i = 1; i < buffer.length; i += playerLiteBufferSize) {
-            int playerX = ServerHandler.toInt(ServerHandler.extractByteArray(buffer, i * 8, (i * 8) + 4));
-            int playerY = ServerHandler.toInt(ServerHandler.extractByteArray(buffer, (i * 8) + 4, (i * 8) + 8));
-            System.out.println("Other Player Pos");
-            System.out.println("Player X: " + playerX + " Player Y: " + playerY);
-            PlayerLite player = new PlayerLite(playerX, playerY);
-            players.add(player);
+        for (int i = 1; i < buffer.length - 15; i += 8) {
+            byte[] playerLiteBuffer = new byte[8];
+            System.arraycopy(buffer, i, playerLiteBuffer, 0, 8);
+            players.add(byteArrToPlayerLite(playerLiteBuffer));
         }
+    }
+    
+    private static PlayerLite byteArrToPlayerLite(byte[] arr) {
+        byte[] x = new byte[4];
+        byte[] y = new byte[4];
+
+        System.arraycopy(arr, 0, x, 0, 4);
+        System.arraycopy(arr, 4, y, 0, 4);
+
+        return new PlayerLite(ServerHandler.toInt(x), ServerHandler.toInt(y));
     }
 
 }
