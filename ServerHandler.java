@@ -44,7 +44,7 @@ class ServerHandler extends Thread
 	{
         try {
             this.UDPsocket = new DatagramSocket(0);
-            this.UDPHandler = new ServerUDPHandler(this, UDPsocket, socket.getInetAddress(), socket.getPort(), players);
+            this.UDPHandler = new ServerUDPHandler(this, UDPsocket, socket.getInetAddress(), socket.getPort(), player, players, originPlatform);
         } catch (SocketException e) { e.printStackTrace(); }
         this.socket = socket;
 
@@ -148,9 +148,9 @@ class ServerHandler extends Thread
                         break;
                 }
 
-                if(gameStarted) {
-                    sendPlayer(player.genPlayerLite(platform));
-                }
+                // if(gameStarted) {
+                //     sendPlayer(player.genPlayerLite(platform));
+                // }
 
             } catch (SocketException e) {
                 System.out.println("Server Disconnected");
@@ -176,14 +176,14 @@ class ServerHandler extends Thread
         } catch (IOException e) { e.printStackTrace(); }
     }
 
-    public void sendPlayer(PlayerLite player) throws IOException, ClassNotFoundException {
-        out.write((byte) 0x02);
-        byte[] x = toByteArray(player.x);
-        byte[] y = toByteArray(player.y);
-        out.write(x);
-        out.write(y);
-        out.flush();
-    }
+    // public void sendPlayer(PlayerLite player) throws IOException, ClassNotFoundException {
+    //     out.write((byte) 0x02);
+    //     byte[] x = toByteArray(player.x);
+    //     byte[] y = toByteArray(player.y);
+    //     out.write(x);
+    //     out.write(y);
+    //     out.flush();
+    // }
 
     public void sendPlayerInfo(PlayerInfo player) throws IOException, ClassNotFoundException {
         System.out.println("sending player info");

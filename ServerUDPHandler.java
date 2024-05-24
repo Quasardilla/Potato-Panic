@@ -8,17 +8,22 @@ import java.util.ArrayList;
 public class ServerUDPHandler extends Thread {
     protected ServerHandler serverHandler;
     protected DatagramSocket UDPSocket;
+    protected Player player;
     protected ArrayList<PlayerLite> players;
+    protected Platform originPlatform;
     private final int playerLiteBufferSize = 16;
     private final int playerLiteListBufferSize = 256;
     private InetAddress serverIP;
     private int serverPort;
 
-    public ServerUDPHandler(ServerHandler serverHandler, DatagramSocket socket, InetAddress serverIP, int serverPort, ArrayList<PlayerLite> players) {
+    public ServerUDPHandler(ServerHandler serverHandler, DatagramSocket socket, InetAddress serverIP, int serverPort, Player player, ArrayList<PlayerLite> players, Platform originPlatform) {
         this.serverHandler = serverHandler;
         this.UDPSocket = socket;
         this.serverIP = serverIP;
         this.serverPort = serverPort;
+        this.player = player;
+        this.players = players;
+        this.originPlatform = originPlatform;
 
         setName("ServerUDPHandler");
     }
@@ -50,7 +55,7 @@ public class ServerUDPHandler extends Thread {
 			} catch (Exception e) { e.printStackTrace(); }
 
             if(serverHandler.gameStarted) {
-                sendPlayerLite();
+                sendPlayerLite(player.genPlayerLite(originPlatform));
             }
         }
     }
@@ -64,15 +69,17 @@ public class ServerUDPHandler extends Thread {
         return buffer;
     }
 
-    private void sendPlayerLite() {
+    private void sendPlayerLite(PlayerLite player) {
         byte[] buffer = new byte[playerLiteBufferSize];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, serverIP, serverPort);
+
         try {
             UDPSocket.send(packet);
         } catch (IOException e) { e.printStackTrace(); }
     }
 
     private void readPlayerLiteList(byte[] buffer) {
+        players.clear();
         for (int i = 1; i < buffer.length; i += playerLiteBufferSize) {
             int playerX = ServerHandler.toInt(ServerHandler.extractByteArray(buffer, i * 8, (i * 8) + 4));
             int playerY = ServerHandler.toInt(ServerHandler.extractByteArray(buffer, (i * 8) + 4, (i * 8) + 8));
