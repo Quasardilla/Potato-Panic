@@ -98,17 +98,17 @@ class ClientHandler extends Thread
                         break;
                 }
 			} catch (SocketException e) {
+				e.printStackTrace();
 				System.out.println("- My client disconnected, and i'm " + this.getName());
 				try {
 					sharedThread.playerDisconnected(playerNum);
-				} catch (IOException e1) {}
+				} catch (IOException e1) { e.printStackTrace(); }
 				close();
 				break;
 			} catch (Exception e) { e.printStackTrace(); }
 		}
 
 		System.out.println("- broke out of loop as " + this.getName());
-
 		return;
 
 	}

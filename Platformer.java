@@ -530,6 +530,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             }
             else if(connectionError) {
                 connectionError = false;
+                connErr = null;
                 errString = "";
                 serverList = true;
             }
