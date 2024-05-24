@@ -42,7 +42,7 @@ public class ServerUDPHandler extends Thread {
         System.out.println("ServerUDPHandler running");
         while (!close) {
             try {
-                Thread.sleep(10);
+                Thread.sleep(5);
 			} catch (InterruptedException e) { e.printStackTrace(); }
 			
             if(serverHandler.gameStarted) {
@@ -105,9 +105,6 @@ public class ServerUDPHandler extends Thread {
     }
 
     private void readPlayerLiteList(byte[] buffer) {
-        System.out.println("msg: " + buffer[0]);
-        System.out.println("player: " + buffer[1]);
-
         if(buffer[1] != serverHandler.playerNum) {
             return;
         }
@@ -117,8 +114,6 @@ public class ServerUDPHandler extends Thread {
             byte[] playerLiteBuffer = new byte[8];
             System.arraycopy(buffer, i, playerLiteBuffer, 0, 8);
             players.add(byteArrToPlayerLite(playerLiteBuffer));
-            if(i == 16)
-                System.out.println("Player 1: " + byteArrToPlayerLite(playerLiteBuffer));
         }
     }
     
