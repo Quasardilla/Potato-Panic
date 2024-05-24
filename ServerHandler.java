@@ -44,7 +44,7 @@ class ServerHandler extends Thread
 	{
         try {
             this.UDPsocket = new DatagramSocket(0);
-            this.UDPHandler = new ServerUDPHandler(UDPsocket, socket.getInetAddress(), socket.getPort(), players);
+            this.UDPHandler = new ServerUDPHandler(this, UDPsocket, socket.getInetAddress(), socket.getPort(), players);
         } catch (SocketException e) { e.printStackTrace(); }
         this.socket = socket;
 

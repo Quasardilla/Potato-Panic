@@ -81,8 +81,13 @@ public class ClientUDPHandler extends Thread {
 
     private PlayerLite bufferToPlayerLite(byte[] buffer) throws IOException, ClassNotFoundException
 	{
-		byte[] x = new byte[4];
-		byte[] y = new byte[4];
+        byte[] x = new byte[4];
+        byte[] y = new byte[4];
+		for(int i = 1 ; i < 5; i++)
+            x[i - 1] = buffer[i];
+            
+		for(int i = 5 ; i < 9; i++)
+            y[i - 5] = buffer[i];
 
 		int playerX = MasterClientHandler.toInt(x);
 		int playerY = MasterClientHandler.toInt(y);
