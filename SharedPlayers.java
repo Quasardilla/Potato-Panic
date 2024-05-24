@@ -115,6 +115,7 @@ public class SharedPlayers implements Serializable{
     public void setPlayer(int playerNum, PlayerLite player) {
         int index = playerIndicies.get(playerNum);
         players.set(index, player);
+        // System.out.println(players.toString());
     }
 
     public void setGameStarted(boolean gameStarted) {
