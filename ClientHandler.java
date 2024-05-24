@@ -44,6 +44,7 @@ class ClientHandler extends Thread
 
 		System.out.println("meow2");
 		setName("ClientHandler-" + playerNum);
+		System.out.println("ClientHandler-" + playerNum + " created");
 	}
 
 

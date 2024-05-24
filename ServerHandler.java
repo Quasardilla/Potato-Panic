@@ -43,7 +43,7 @@ class ServerHandler extends Thread
 	public ServerHandler(Socket socket, BufferedInputStream in, BufferedOutputStream out, Player player, PlayerInfo playerInfo, Platform originPlatform)
 	{
         try {
-            this.UDPsocket = new DatagramSocket(0);
+            this.UDPsocket = new DatagramSocket(5101);
             this.UDPHandler = new ServerUDPHandler(this, UDPsocket, socket.getInetAddress(), socket.getPort(), player, players, originPlatform);
         } catch (SocketException e) { e.printStackTrace(); }
         this.socket = socket;

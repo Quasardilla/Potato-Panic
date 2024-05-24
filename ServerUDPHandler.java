@@ -36,28 +36,28 @@ public class ServerUDPHandler extends Thread {
      */
     @Override
     public void run() {
-        while (true) {
-            try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) { e.printStackTrace(); }
+        // while (true) {
+        //     try {
+		// 		Thread.sleep(10);
+		// 	} catch (InterruptedException e) { e.printStackTrace(); }
 			
-            byte[] data = receiveData();
+        //     byte[] data = receiveData();
 
-			try {			
-                switch (data[0]) {
-                    case 0x04:
-                        readPlayerLiteList(data);
-                        break;
+		// 	try {			
+        //         switch (data[0]) {
+        //             case 0x04:
+        //                 readPlayerLiteList(data);
+        //                 break;
                 
-                    default:
-                        break;
-                }
-			} catch (Exception e) { e.printStackTrace(); }
+        //             default:
+        //                 break;
+        //         }
+		// 	} catch (Exception e) { e.printStackTrace(); }
 
-            if(serverHandler.gameStarted) {
-                sendPlayerLite(player.genPlayerLite(originPlatform));
-            }
-        }
+        //     if(serverHandler.gameStarted) {
+        //         sendPlayerLite(player.genPlayerLite(originPlatform));
+        //     }
+        // }
     }
 
     private byte[] receiveData() {
