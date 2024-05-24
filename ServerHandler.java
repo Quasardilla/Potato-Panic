@@ -43,7 +43,7 @@ class ServerHandler extends Thread
 	public ServerHandler(Socket socket, BufferedInputStream in, BufferedOutputStream out, Player player, PlayerInfo playerInfo, Platform originPlatform)
 	{
         try {
-            this.UDPsocket = new DatagramSocket(5100);
+            this.UDPsocket = new DatagramSocket(socket.getPort());
             this.UDPHandler = new ServerUDPHandler(this, UDPsocket, socket.getInetAddress(), socket.getPort(), player, players, originPlatform);
             this.UDPHandler.start();
         } catch (SocketException e) { e.printStackTrace(); }
@@ -146,7 +146,7 @@ class ServerHandler extends Thread
                         break;
                     default:
                         if(type == -1) {
-                            System.out.println("Server Disconnected (meow)");
+                            System.out.println("Server Disconnected");
                             disconnectedMessage = "A fatal error has occured that has caused the server to disconnect";
                             close();
                             break;

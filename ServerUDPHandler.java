@@ -26,6 +26,8 @@ public class ServerUDPHandler extends Thread {
         this.players = players;
         this.originPlatform = originPlatform;
 
+        System.out.println("ServerUDPHandler started");
+
         setName("ServerUDPHandler");
     }
 
@@ -37,38 +39,37 @@ public class ServerUDPHandler extends Thread {
      */
     @Override
     public void run() {
-        // while (true) {
-        //     try {
-		// 		Thread.sleep(10);
-		// 	} catch (InterruptedException e) { e.printStackTrace(); }
+        System.out.println("ServerUDPHandler running");
+        while (!close) {
+            try {
+                Thread.sleep(10);
+			} catch (InterruptedException e) { e.printStackTrace(); }
 			
-        //     byte[] data = receiveData();
+            if(serverHandler.gameStarted) {
+                System.out.println("Sending PlayerLite");
+                sendPlayerLite(player.genPlayerLite(originPlatform));
 
-		// 	try {			
-        //         switch (data[0]) {
-        //             case 0x04:
-        //                 readPlayerLiteList(data);
-        //                 break;
-                
-        //             default:
-        //                 break;
-        //         }
-		// 	} catch (Exception e) { e.printStackTrace(); }
+                byte[] data = receiveData();
 
-        //     if(serverHandler.gameStarted) {
-        //         sendPlayerLite(player.genPlayerLite(originPlatform));
-        //     }
+                try {			
+                    switch (data[0]) {
+                        case 0x04:
+                            readPlayerLiteList(data);
+                            break;
+                    
+                        default:
+                            break;
+                    }
+                } catch (Exception e) { e.printStackTrace(); }
+            }
+        }
 
-        //     if (close) {
-        //         System.out.println("ServerUDPHandler closed");
-        //         break;
-        //     }
-        // }
+        System.out.println("ServerUDPHandler closed");
     }
 
     public void close() {
         UDPSocket.close();
-        UDPSocket.disconnect();;
+        UDPSocket.disconnect();
         close = true;
         System.out.println("UDPSocket closed");
     }
@@ -85,6 +86,12 @@ public class ServerUDPHandler extends Thread {
     private void sendPlayerLite(PlayerLite player) {
         byte[] buffer = new byte[playerLiteBufferSize];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, serverIP, serverPort);
+
+        byte[] x = ServerHandler.toByteArray(player.x);
+        byte[] y = ServerHandler.toByteArray(player.y);
+        buffer[0] = 0x02;
+        System.arraycopy(x, 0, buffer, 1, x.length);
+        System.arraycopy(y, 0, buffer, 5, y.length);
 
         try {
             UDPSocket.send(packet);
