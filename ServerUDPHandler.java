@@ -96,8 +96,8 @@ public class ServerUDPHandler extends Thread {
         byte[] y = ServerHandler.toByteArray(player.y);
         buffer[0] = 0x02;
         buffer[1] = (byte) serverHandler.playerNum;
-        System.arraycopy(x, 0, buffer, 9, x.length);
-        System.arraycopy(y, 0, buffer, 13, y.length);
+        System.arraycopy(x, 0, buffer, 8, x.length);
+        System.arraycopy(y, 0, buffer, 12, y.length);
 
         try {
             UDPSocket.send(packet);
