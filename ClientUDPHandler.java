@@ -41,33 +41,13 @@ public class ClientUDPHandler extends Thread {
 				Thread.sleep(10);
 			} catch (InterruptedException e) { e.printStackTrace(); }
 			
-            System.out.println("Receiving data");
             byte[] data = receiveData();
-            System.out.println(data[0]);
-            for(int i = 0; i < data.length; i++)
-                System.out.print(data[i] + " ");
-
-            System.out.println();
 
 			try {			
                 switch (data[0]) {
                     case 0x02:
                         players.setPlayer(playerNum, bufferToPlayerLite(data));
-                        /*
-                        * "recentlySwitched" exists because when the potato switches,
-                        * it delays the player from having their position registered
-                        * for ~10 ms, the same amount of time the thread sleeps for.
-                        * This time adds up as the potato switches throughout the game, 
-                        * so instead of sending the other player's positions, which 
-                        * would prompt the client to send their position 
-                        * (upholding the delay), I simply catch up the thread by just 
-                        * reading the player's position.
-                        */
-                        if(!clientHandler.recentlySwitched) {
-                            sendOtherPlayers(players.getOtherPlayers(playerNum));
-                        } else
-                            clientHandler.recentlySwitched = false;
-
+                        sendOtherPlayers(players.getOtherPlayers(playerNum));
                         break;
                 
                     default:
@@ -83,7 +63,6 @@ public class ClientUDPHandler extends Thread {
         try {
             UDPSocket.receive(packet);
         } catch (IOException e) { e.printStackTrace(); }
-        System.out.println("Recieved Data");
         ClientIP = packet.getAddress();
         ClientPort = packet.getPort();
         return buffer;
@@ -102,6 +81,8 @@ public class ClientUDPHandler extends Thread {
 		int playerX = MasterClientHandler.toInt(x);
 		int playerY = MasterClientHandler.toInt(y);
 
+        System.out.println(new PlayerLite(playerX, playerY));
+
 		return new PlayerLite(playerX, playerY);
 	} 
 
@@ -109,15 +90,17 @@ public class ClientUDPHandler extends Thread {
 	private void sendOtherPlayers(ArrayList<PlayerLite> otherPlayers) throws IOException {
         byte[] buffer = new byte[playerLiteListBufferSize];
         buffer[0] = 0x04;
-		for(int i = 0; i < otherPlayers.size(); i++)
+		for(int i = 1; i < otherPlayers.size(); i++)
 		{
 			PlayerLite otherPlayer = otherPlayers.get(i);
-            MasterClientHandler.insertByteArray(buffer, MasterClientHandler.toByteArray(otherPlayer.x), i * 8);
-            MasterClientHandler.insertByteArray(buffer, MasterClientHandler.toByteArray(otherPlayer.y), (i * 8) + 4);
+            byte[] x = MasterClientHandler.toByteArray(otherPlayer.x);
+            byte[] y = MasterClientHandler.toByteArray(otherPlayer.y);
+            System.arraycopy(x, 0, buffer, i * 8, x.length);
+            System.arraycopy(y, 0, buffer, (i * 8) + 4, y.length);
 		}
-        System.out.println("Sending other players");
-        for(int i = 0; i < buffer.length; i++)
-            System.out.print(buffer[i] + " ");
+        // for(int i = 0; i < buffer.length; i++)
+        //     System.out.print(buffer[i] + " ");
+
         DatagramPacket otherPlayersPacket = new DatagramPacket(buffer, buffer.length, ClientIP, ClientPort);
 		UDPSocket.send(otherPlayersPacket);
 	}
