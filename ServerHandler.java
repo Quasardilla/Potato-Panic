@@ -44,7 +44,7 @@ class ServerHandler extends Thread
 	{
         try {
             this.UDPsocket = new DatagramSocket(0);
-            this.UDPHandler = new ServerUDPHandler(UDPsocket, socket.getInetAddress(), socket.getPort(), players);
+            this.UDPHandler = new ServerUDPHandler(this, UDPsocket, socket.getInetAddress(), socket.getPort(), players);
         } catch (SocketException e) { e.printStackTrace(); }
         this.socket = socket;
 
@@ -102,9 +102,9 @@ class ServerHandler extends Thread
                         playerInfos = readPlayerInfos();
                         System.out.println("There are " + playerInfos.size() + " other players");
                         break;
-                    case 0x04:
-                        players = readPlayers();
-                        break;
+                    // case 0x04:
+                    //     players = readPlayers();
+                    //     break;
                     case 0x05:
                         startTime = readStartTime();
                         gameLength = readGameLength();
