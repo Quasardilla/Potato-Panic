@@ -19,7 +19,7 @@ class ClientHandler extends Thread
 	protected ClientUDPHandler UDPHandler;
     protected SharedPlayers players;
 	protected PlayerLite player;	
-	protected int playerNum;
+	protected final int playerNum;
 	protected static int playerCount = 0;
 	protected int acknowledgedPlayers = 0;
 
@@ -34,12 +34,12 @@ class ClientHandler extends Thread
 		this.out = new BufferedOutputStream(out);
 		this.sharedThread = sharedThread;
 		this.players = players;
-		UDPHandler = new ClientUDPHandler(this, UDPsocket, players, playerNum);
-		UDPHandler.start();
-
 		playerNum = playerCount;
 		acknowledgedPlayers = playerNum;
         playerCount++;
+		
+		UDPHandler = new ClientUDPHandler(this, UDPsocket, players, playerNum);
+		UDPHandler.start();
 
 		setName("ClientHandler-" + playerNum);
 		System.out.println("ClientHandler-" + playerNum + " created");
@@ -49,7 +49,7 @@ class ClientHandler extends Thread
     /** 
      *  <pre>     
      *Message Types: 
-     *  0x00 - Player Join (For server, playerInfo like name, color, etc.)
+     *  0x00 - Player Join (For server, playerInfo like name, color, etc., and for client, playernum)
      *  0x01 - Player Leaves (For client, player index of who left)
      *  0x02 - PlayerLite Info (For server, player position)
      *  0x03 - PlayerInfo (For client, names, colors, etc.)
@@ -81,11 +81,15 @@ class ClientHandler extends Thread
 						if(!playerJoined) {
 							playerJoined = true;
 							players.addPlayer(readPlayerInfo()); 
+							out.write(0x00);
+							out.write(playerNum);
+							out.flush();
 							if(players.getGameStarted()) {
 								players.eliminatedPlayers.add(playerNum);
 								System.out.println("adding player as spectator");
 								sendStartGame();
 								out.write(0x09);
+								out.flush();
 							}
 							sharedThread.playerJoined();
 						}
