@@ -102,9 +102,9 @@ class ServerHandler extends Thread
                         playerInfos = readPlayerInfos();
                         System.out.println("There are " + playerInfos.size() + " other players");
                         break;
-                    case 0x04:
-                        players = readPlayers();
-                        break;
+                    // case 0x04:
+                    //     players = readPlayers();
+                    //     break;
                     case 0x05:
                         startTime = readStartTime();
                         gameLength = readGameLength();

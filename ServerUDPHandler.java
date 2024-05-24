@@ -39,7 +39,7 @@ public class ServerUDPHandler extends Thread {
 			try {			
                 switch (data[0]) {
                     case 0x04:
-                        sendPlayerLite();
+                        readPlayerLiteList();
                         break;
                 
                     default:
