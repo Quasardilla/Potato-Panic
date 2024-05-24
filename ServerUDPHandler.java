@@ -52,7 +52,7 @@ public class ServerUDPHandler extends Thread {
 
                 try {			
                     switch (data[0]) {
-                        case 0x04:
+                        case 0x00:
                             readPlayerLiteList(data);
                             break;
                     
@@ -105,12 +105,19 @@ public class ServerUDPHandler extends Thread {
     }
 
     private void readPlayerLiteList(byte[] buffer) {
+        System.out.println("msg: " + buffer[0]);
+        System.out.println("player: " + buffer[1]);
+
+        if(buffer[1] != serverHandler.playerNum) {
+            return;
+        }
+
         players.clear();
-        for (int i = 1; i < buffer.length - 15; i += 8) {
+        for (int i = 16; i < buffer.length; i += 8) {
             byte[] playerLiteBuffer = new byte[8];
             System.arraycopy(buffer, i, playerLiteBuffer, 0, 8);
             players.add(byteArrToPlayerLite(playerLiteBuffer));
-            if(i == 1)
+            if(i == 16)
                 System.out.println("Player 1: " + byteArrToPlayerLite(playerLiteBuffer));
         }
     }
