@@ -5,7 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 public class Client implements Runnable {
-    private static Socket clientSocket = new Socket();
+    private static Socket clientSocket;
     private final int TIMEOUT = 15;
     protected static BufferedInputStream in;
 	protected static BufferedOutputStream out;
@@ -16,6 +16,10 @@ public class Client implements Runnable {
     public Client(String ip, int port) {
         this.ip = ip;
         this.port = port;
+        clientSocket = new Socket();
+
+        System.out.println("----------------- Server Connection Started -----------------");
+        System.out.println("Connecting to " + ip + ":" + port);
     }
 
 
@@ -30,6 +34,9 @@ public class Client implements Runnable {
             out = new BufferedOutputStream(clientSocket.getOutputStream());
             in = new BufferedInputStream(clientSocket.getInputStream());
         } catch (IOException e) {
+            System.out.println("error connecting to " + ip + ":" + port);
+            System.out.println("In Client: ");
+            e.printStackTrace();
             return e;
         }
         return null;

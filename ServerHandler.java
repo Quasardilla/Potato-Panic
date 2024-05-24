@@ -43,8 +43,9 @@ class ServerHandler extends Thread
 	public ServerHandler(Socket socket, BufferedInputStream in, BufferedOutputStream out, Player player, PlayerInfo playerInfo, Platform originPlatform)
 	{
         try {
-            this.UDPsocket = new DatagramSocket(5101);
+            this.UDPsocket = new DatagramSocket(5100);
             this.UDPHandler = new ServerUDPHandler(this, UDPsocket, socket.getInetAddress(), socket.getPort(), player, players, originPlatform);
+            this.UDPHandler.start();
         } catch (SocketException e) { e.printStackTrace(); }
         this.socket = socket;
 
@@ -76,7 +77,12 @@ class ServerHandler extends Thread
 	{
         try {
             sendPlayerInfo(playerInfo);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Server Disconnected On Initialization");
+            disconnectedMessage = "A fatal error has occured that has caused the server to disconnect";
+            close();
+        }
 
 		while (!socket.isClosed())
 		{
@@ -140,6 +146,7 @@ class ServerHandler extends Thread
                         break;
                     default:
                         if(type == -1) {
+                            System.out.println("Server Disconnected (meow)");
                             disconnectedMessage = "A fatal error has occured that has caused the server to disconnect";
                             close();
                             break;
@@ -153,6 +160,7 @@ class ServerHandler extends Thread
                 // }
 
             } catch (SocketException e) {
+                e.printStackTrace();
                 System.out.println("Server Disconnected");
                 disconnectedMessage = "Server Disconnected";
                 close();
@@ -165,15 +173,16 @@ class ServerHandler extends Thread
 
         gameStarted = false;
         System.out.println("ServerHandler closed");
-
 	}
 
     private void close() {
+        System.out.println("Closing ServerHandler");
         try {
             socket.close();
             this.in.close();
             this.out.close();
         } catch (IOException e) { e.printStackTrace(); }
+        UDPHandler.close();
     }
 
     // public void sendPlayer(PlayerLite player) throws IOException, ClassNotFoundException {
