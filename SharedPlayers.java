@@ -63,11 +63,11 @@ public class SharedPlayers implements Serializable{
     }
 
     public ArrayList<PlayerInfo> getOtherPlayerInfos(int playerNum) {
-        System.out.println(playerNum);
+        // System.out.println(playerNum);
 
         ArrayList<PlayerInfo> otherPlayers = new ArrayList<PlayerInfo>();
         int index = playerIndicies.get(playerNum);
-        System.out.println(index);
+        // System.out.println(index);
 
         for(int i = 0; i < playerInfos.size(); i++) {
             if(i != index)

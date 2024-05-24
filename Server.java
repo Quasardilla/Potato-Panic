@@ -33,7 +33,7 @@ public class Server {
         try {
             serverSocket = new ServerSocket();
             serverSocket.bind(new InetSocketAddress(host, port));
-            clientUDPSocket = new DatagramSocket(port);
+            // clientUDPSocket = new DatagramSocket(5101);
         } catch (IOException e) {}
         sharedThread.start();
     }
@@ -41,7 +41,7 @@ public class Server {
     public void listenForClient() {
         try {
             clientSocket = serverSocket.accept(); 
-            System.out.println(clientSocket.getInetAddress().getHostAddress());
+            // System.out.println(clientSocket.getInetAddress().getHostAddress());
             out = clientSocket.getOutputStream();
             outputStreams.add(new BufferedOutputStream(out));
             in = clientSocket.getInputStream();

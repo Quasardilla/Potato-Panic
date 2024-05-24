@@ -23,7 +23,7 @@ class ClientHandler extends Thread
 	protected static int playerCount = 0;
 	protected int acknowledgedPlayers = 0;
 
-	public boolean recentlySwitched = false;
+	public boolean recentlySwitched, playerJoined;
 
 	// Constructor
 	public ClientHandler(Socket socket, DatagramSocket UDPsocket, InputStream in, OutputStream out, MasterClientHandler sharedThread, SharedPlayers players)
@@ -77,21 +77,33 @@ class ClientHandler extends Thread
 			
 			try {
 				int type = in.read();
+				System.out.println("Player " + playerNum + " sent " + type);
                 switch(type) {
                     case 0x00:
-                        players.addPlayer(readPlayerInfo()); 
-						if(players.getGameStarted()) {
-							players.eliminatedPlayers.add(playerNum);
-							System.out.println("adding player as spectator");
-							sendStartGame();
-							out.write(0x09);
+						if(!playerJoined) {
+							playerJoined = true;
+							players.addPlayer(readPlayerInfo()); 
+							if(players.getGameStarted()) {
+								players.eliminatedPlayers.add(playerNum);
+								System.out.println("adding player as spectator");
+								sendStartGame();
+								out.write(0x09);
+							}
+							sharedThread.playerJoined();
 						}
-						sharedThread.playerJoined();
                         break;
                     case 0x05:
                         sharedThread.startGame();
                         break;
                     default:
+						if(type == -1) {
+							System.out.println("- My client disconnected, and i'm " + this.getName());
+							try {
+								sharedThread.playerDisconnected(playerNum);
+							} catch (IOException e1) { e1.printStackTrace(); }
+							close();
+							break;
+						}
                         // System.err.println("An invalid message was recieved from player " + playerNum + ".");
 						// System.out.println(type);
 						// sharedThread.playerDisconnected(players.getPlayerIndicies().get(playerNum));
@@ -103,7 +115,7 @@ class ClientHandler extends Thread
 				System.out.println("- My client disconnected, and i'm " + this.getName());
 				try {
 					sharedThread.playerDisconnected(playerNum);
-				} catch (IOException e1) { e.printStackTrace(); }
+				} catch (IOException e1) { e1.printStackTrace(); }
 				close();
 				break;
 			} catch (Exception e) { e.printStackTrace(); }
