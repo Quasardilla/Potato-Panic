@@ -28,14 +28,12 @@ class ServerHandler extends Thread
     protected boolean gameStarted = false, playerEliminated = false, gameEnded = false;
 	protected static int playerCount = 0;
     protected String disconnectedMessage = "";
-
 	
 	private static double totalPings = 0;
     private static double lastPPSCheck = 0;
     private static double currentPPS = 0;
 
 	private int ping;
-
     private long t1;
     private long t2;    
 
@@ -345,12 +343,16 @@ class ServerHandler extends Thread
     }
 
 	public int getPing() {
-		return ping;
+		return UDPHandler.getPing();
 	}
 
 	public int getPPS() {
-		return (int) currentPPS;
+		return (int) UDPHandler.getPPS() + (int) currentPPS;
 	}
+
+    public int getApproxFPS() {
+        return UDPHandler.getApproxFPS();
+    }
 
     public String getDisconnectedMessage() {
 		return disconnectedMessage;

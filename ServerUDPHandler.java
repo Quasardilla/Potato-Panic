@@ -17,6 +17,16 @@ public class ServerUDPHandler extends Thread {
     private int serverPort;
     private boolean close;
 
+    private static double totalPings = 0;
+    private static double playerFPSPings = 0;
+    private static double lastPPSCheck = 0;
+    private static double currentPPS = 0;
+    private static double playerFPS = 0;
+
+	private int ping;
+    private long t1;
+    private long t2; 
+
     public ServerUDPHandler(ServerHandler serverHandler, DatagramSocket socket, InetAddress serverIP, int serverPort, Player player, ArrayList<PlayerLite> players, Platform originPlatform) {
         this.serverHandler = serverHandler;
         this.UDPSocket = socket;
@@ -41,6 +51,17 @@ public class ServerUDPHandler extends Thread {
     public void run() {
         System.out.println("ServerUDPHandler running");
         while (!close) {
+            if (System.nanoTime() > lastPPSCheck + 1000000000)
+            {
+                lastPPSCheck = System.nanoTime();
+                currentPPS = totalPings;
+                playerFPS = playerFPSPings;
+                totalPings = 0;
+                playerFPSPings = 0;
+            }
+
+            t1 = System.currentTimeMillis();
+
             try {
                 Thread.sleep(5);
 			} catch (InterruptedException e) { e.printStackTrace(); }
@@ -63,6 +84,10 @@ public class ServerUDPHandler extends Thread {
             }
         }
 
+        t2 = System.currentTimeMillis();
+
+        ping = (int) (t2 - t1);
+
         System.out.println("ServerUDPHandler closed");
     }
 
@@ -74,6 +99,7 @@ public class ServerUDPHandler extends Thread {
     }
 
     private byte[] receiveData() {
+        totalPings++;
         byte[] buffer = new byte[playerLiteListBufferSize];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         try {
@@ -89,6 +115,7 @@ public class ServerUDPHandler extends Thread {
      * The player to send to the server
      */
     private void sendPlayerLite(PlayerLite player) {
+        totalPings++;
         byte[] buffer = new byte[playerLiteBufferSize];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, serverIP, serverPort);
 
@@ -108,6 +135,7 @@ public class ServerUDPHandler extends Thread {
         if(buffer[1] != serverHandler.playerNum) {
             return;
         }
+        playerFPSPings++;
 
         players.clear();
         for (int i = 16; i < buffer.length; i += 8) {
@@ -129,6 +157,18 @@ public class ServerUDPHandler extends Thread {
 
     public ArrayList<PlayerLite> getPlayers() {
         return players;
+    }
+
+    public int getPing() {
+		return ping;
+	}
+
+	public int getPPS() {
+		return (int) currentPPS;
+	}
+
+    public int getApproxFPS() {
+        return (int) playerFPS;
     }
 
 }

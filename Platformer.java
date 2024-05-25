@@ -41,7 +41,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private static final int PREF_H = Toolkit.getDefaultToolkit().getScreenSize().height;
     private RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     
-    private static int FPSCap = 60;
+    private static int FPSCap = 80;
     private static boolean unlimited = false;
     private static double totalFrames = 0;
     private static double lastFPSCheck = 0;
@@ -442,6 +442,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         if(t != null) {
             g2.drawString("PPS: " + t.getPPS(), 10, 80);
             g2.drawString("Ping: " + t.getPing(), 10, 100);
+            g2.drawString("Approx Player FPS: " + t.getApproxFPS(), 10, 120);
         }
 
         if(showSettings) {
@@ -806,7 +807,12 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                 g2.fillRect(otherPlayers.get(i).x + (int) originP.getX() - 5, otherPlayers.get(i).y + (int) originP.getY() - 5, 60, 60);
             }
 
-            otherPlayers.get(i).draw(g2, originP, otherPlayerInfos.get(i), false);
+            try {
+                otherPlayers.get(i).draw(g2, originP, otherPlayerInfos.get(i), false);
+            } catch (Exception e) {
+                System.out.println(i);
+                e.printStackTrace();
+            }
 
         }
     }
