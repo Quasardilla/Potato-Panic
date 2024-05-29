@@ -1,3 +1,4 @@
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -20,6 +21,12 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import Appearance.Accessory;
+import Appearance.Eyes;
+import Appearance.Face;
+import Appearance.Mouth;
+import Client.*;
+import Server.PlayerLite;
 import UI.Button;
 import UI.TextBox;
 import Font.EasyFontInstaller;
@@ -62,8 +69,8 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private Font smallFont = new Font("Mochiy Pop P One", Font.PLAIN, 12);
     private FontMetrics metrics;
 
-    private Image banner = new ImageIcon("./img/PotatoPanicBanner.png").getImage().getScaledInstance(1920 / 2, 612 / 2, Image.SCALE_SMOOTH);
-    private Image settings = new ImageIcon("./img/Settings.png").getImage().getScaledInstance(75, 75, Image.SCALE_SMOOTH);
+    private Image banner = new ImageIcon("./lib/img/PotatoPanicBanner.png").getImage().getScaledInstance(1920 / 2, 612 / 2, Image.SCALE_SMOOTH);
+    private Image settings = new ImageIcon("./lib/img/Settings.png").getImage().getScaledInstance(75, 75, Image.SCALE_SMOOTH);
     
     private ArrayList<Platform> platforms = new ArrayList<Platform>();
     private final double VERTICAL_BOUND_MAX = 4000;
@@ -71,11 +78,11 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private final double HORIZONTAL_BOUND_MAX = 3500;
     private final double HORIZONTAL_BOUND_MIN = -3500;
 
-    private boolean titleScreen = true, showSettings, practicing, 
+    private boolean titleScreen = true, showSettings, editPlayer, practicing, 
     serverList, addServer, editServer,
     connecting, connectionError, threadStarted, connThreadStarted;
 
-    private Button playButton, practiceButton, settingsButton, doneButton, settingsDoneButton, backButton, startButton;
+    private Button playButton, practiceButton, customizeButton, customizeDoneButton, settingsButton, doneButton, settingsDoneButton, backButton, startButton;
     private TextBox serverNameBox, serverIPBox, usernameBox, colorBox;
     private ArrayList<ServerObject> servers;
     private ArrayList<Button> serverButtons;
@@ -84,6 +91,12 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     private Player player = new Player(PREF_W / 2, PREF_H / 2);
     private PlayerInfo playerInfo;
+    private Face face;
+    private int eyesID;
+    private int mouthID;
+    private ArrayList<Eyes> eyes;
+    private ArrayList<Mouth> mouths;
+    private ArrayList<Accessory> accessories;
     private ArrayList<PlayerLite> otherPlayers = new ArrayList<PlayerLite>();
     private ArrayList<PlayerInfo> otherPlayerInfos = new ArrayList<PlayerInfo>();
     private Client client;
@@ -100,7 +113,6 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         requestFocus();
         
         resetPlatforms();
-
         EasyFontInstaller.installFont("MochiyPopPOne-Regular.ttf");
 
         metrics = getFontMetrics(largeFont);
@@ -108,6 +120,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         int buttonHeight = 100;
         int buttonY = PREF_H - 50 - buttonHeight;
         int spacing = (PREF_W - 100 - (4 * buttonWidth)) / 3;
+
+        /*
+         * Server buttons: add, edit, remove, connect
+         */
         String str = "Add New";
         serverOptionButtons.add(new Button(50, buttonY, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight() + 10, largeFont.getSize(), largeFont, str, Color.WHITE, Color.BLACK));
         str = "Edit";
@@ -119,33 +135,46 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         
         int buttonX = (PREF_W / 2) - buttonWidth / 2;
         
+        /*
+         * Text boxes: server name, server ip, username, color
+         */
         serverNameBox = new TextBox(buttonX, 200, buttonWidth, 50, Color.GRAY, mediumFont, Color.WHITE, "New Server", Color.LIGHT_GRAY);
         serverIPBox = new TextBox(buttonX, 300, buttonWidth, 50, Color.GRAY, mediumFont, Color.WHITE, "127.0.0.1:5100", Color.LIGHT_GRAY);
         usernameBox = new TextBox(300, 200, buttonWidth, 50, Color.GRAY, mediumFont, Color.WHITE, "Player", Color.LIGHT_GRAY);
         colorBox = new TextBox(300, 300, buttonWidth, 50, Color.GRAY, mediumFont, Color.WHITE, "#ababab", Color.LIGHT_GRAY);
-        str = "Done";
-        settingsDoneButton = new Button(buttonX, PREF_H - 400, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight() + 10, largeFont.getSize(), largeFont, str, Color.WHITE, Color.BLACK);
-        str = "Done";
-        doneButton = new Button(buttonX, PREF_H - 400, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight() + 10, largeFont.getSize(), largeFont, str, Color.WHITE, Color.BLACK);
+        
         str = "Back";
         backButton = new Button(buttonX, PREF_H - 400, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight() + 10, largeFont.getSize(), largeFont, str, Color.WHITE, Color.BLACK);
         str = "Start";
         startButton = new Button(buttonX, PREF_H - 200, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight() + 10, largeFont.getSize(), largeFont, str, Color.WHITE, Color.BLACK);
-
-        str = "Play";
+        
         metrics = getFontMetrics(giantFont);
+
+        str = "Done";
+        settingsDoneButton = new Button(buttonX, PREF_H - 400, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
+        doneButton = new Button(buttonX, PREF_H - 400, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
+        customizeDoneButton = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
+
+        /*
+         * Home Screen Buttons: Play, Practice, Settings
+         */
+        str = "Play";
         playButton = new Button(buttonX, 600, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
         str = "Practice";
-        practiceButton = new Button(buttonX, 750, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
+        practiceButton = new Button(buttonX, 720, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
+        str = "Edit Player";
+        customizeButton = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
+        
         str = "";
         buttonWidth = 75;
         settingsButton = new Button(PREF_W - 75 - 10, 10, buttonWidth, buttonWidth, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
-    
+
+        mouths = readMouths();
+        eyes = readEyes();
         playerInfo = readPlayerFile();
-
         servers = readServerFile();
-        serverButtons = generateServerButtons(50, 150, PREF_W - 100, 75, servers);
 
+        serverButtons = generateServerButtons(50, 150, PREF_W - 100, 75, servers);
     }
     
     public Dimension getPreferredSize() {
@@ -154,40 +183,17 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     
     @Override
     public void paintComponent(Graphics g) {
-        //keep this for program to work
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHints(hints);
         metrics = g2.getFontMetrics();
-        playButton.setGraphics(g2);
-        practiceButton.setGraphics(g2);
-        settingsButton.setGraphics(g2);
-        serverNameBox.setGraphics(g2);
-        usernameBox.setGraphics(g2);
-        colorBox.setGraphics(g2);
-        serverIPBox.setGraphics(g2);
-        doneButton.setGraphics(g2);
-        settingsDoneButton.setGraphics(g2);
-        backButton.setGraphics(g2);
-        startButton.setGraphics(g2);
-
+        setGraphics(g2);
         
         if(t != null && t.isAlive())
-        threadStarted = true;
+            threadStarted = true;
         else
-        threadStarted = false;
-        
-        
-        for(Button b : serverButtons) {
-            b.setGraphics(g2);
-        }
-        
-        for(Button b : serverOptionButtons) {
-            b.setGraphics(g2);
-        }
-        
-        // g2.drawLine(PREF_W / 2, 0, PREF_W / 2, PREF_W);
-        
+            threadStarted = false;
+                
         if(t != null && !t.getDisconnectedMessage().equals("")) {
             connectionError = true;
             errString = t.getDisconnectedMessage();
@@ -214,8 +220,11 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             g2.setColor(playerInfo.getColor());
             g2.fillRect((PREF_W / 2) - 125, 280, 250, 250);
 
+            face.draw(g2, (PREF_W / 2) - 125, 280, 250, 250);
+
             playButton.draw();
             practiceButton.draw();
+            customizeButton.draw();
 
             if(!showSettings)
                 g2.drawImage(settings, (int) settingsButton.x, (int) settingsButton.y, null);
@@ -241,7 +250,26 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             
             for(Platform p : platforms)
                 p.draw(g2);    
-            player.draw(g2, playerInfo, false);
+            player.draw(g2, playerInfo, face, false);
+        }
+
+        if(editPlayer) {
+            // usernameBox.draw();
+            // colorBox.draw();
+            String str = playerInfo.getName();
+            g2.setColor(Color.BLACK);
+            g2.setFont(largeFont);
+            metrics = g2.getFontMetrics();
+            g2.drawString(str, (PREF_W / 8) - (metrics.stringWidth(str) / 2), 140);
+            g2.fillRect((PREF_W / 8) - 30, 175, 260, 260);
+            g2.setColor(playerInfo.getColor());
+            g2.fillRect((PREF_W / 8) - 25, 180, 250, 250);
+            g2.setColor(getBackground());
+
+            customizeDoneButton.draw();
+
+            g2.setColor(Color.BLACK);
+            g2.setStroke(new BasicStroke(10));
         }
 
         if(serverList) {
@@ -431,20 +459,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         else {
             g2.setColor(Color.BLACK);
         }
-
-        g2.setFont(smallFont);
-
-        g2.drawString("FPS: " + currentFPS, 10, 20);
-        if(practicing || t != null) {
-            g2.drawString("PlayerX " + (-platforms.get(0).getX() + player.getX() - ((platforms.get(0).getWidth() / 2) - player.getWidth() / 2)), 10, 40);
-            g2.drawString("PlayerY " + (platforms.get(0).getY() - player.getY() - player.getHeight() + (platforms.get(0).getHeight() + 2000)), 10, 60);
-        }
-        if(t != null) {
-            g2.drawString("PPS: " + t.getPPS(), 10, 80);
-            g2.drawString("Ping: " + t.getPing(), 10, 100);
-            g2.drawString("Approx Player FPS: " + t.getApproxFPS(), 10, 120);
-        }
-
+        
         if(showSettings) {
             int margin = 50;
             g2.setColor(new Color(0, 0, 0, 200));
@@ -471,8 +486,23 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             metrics = g2.getFontMetrics();
         }
                 
-        
-        //keep this for program to work
+        g2.setFont(smallFont);
+
+        g2.drawString("FPS: " + currentFPS, 10, 20);
+        if(practicing || t != null) {
+            g2.drawString("PlayerX " + (-platforms.get(0).getX() + player.getX() - ((platforms.get(0).getWidth() / 2) - player.getWidth() / 2)), 10, 40);
+            g2.drawString("PlayerY " + (platforms.get(0).getY() - player.getY() - player.getHeight() + (platforms.get(0).getHeight() + 2000)), 10, 60);
+        }
+        if(t != null) {
+            g2.drawString("PPS: " + t.getPPS(), 10, 80);
+            g2.drawString("Ping: " + t.getPing(), 10, 100);
+            g2.drawString("Approx Player FPS: " + t.getApproxFPS(), 10, 120);
+        }
+
+        /*
+         * Limits the FPS to whatever the FPSCap is set to
+         * If unlimited is set to true, the game will run as fast as possible
+         */
         if (!unlimited)
         {
             totalFrames++;
@@ -581,8 +611,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     }
 
     @Override
-    public void keyTyped(KeyEvent e){
-    }
+    public void keyTyped(KeyEvent e) {}
 
     private static void createAndShowGUI() {
         Platformer gamePanel = new Platformer();
@@ -607,7 +636,6 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         });
     }
     
-
     @Override
     public void mouseDragged(MouseEvent e) {}
 
@@ -624,6 +652,15 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             showSettings = !showSettings;
 
         if(!showSettings) {
+
+            if(editPlayer) {
+                if(customizeDoneButton.mouseClick(e.getX(), e.getY())) {
+                    editPlayer = false;
+                    titleScreen = true;
+                }
+                return;
+            }
+
             if(titleScreen) {
                 if(playButton.mouseClick(e.getX(), e.getY())) {
                     serverList = true;
@@ -633,8 +670,12 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                     practicing = true;
                     titleScreen = false;
                 }
+                if(customizeButton.mouseClick(e.getX(), e.getY())) {
+                    editPlayer = true;
+                    titleScreen = false;
+                }
             }
-    
+
             if(serverList) {
                 for(int i = 0; i < servers.size(); i++) {
                     if(serverButtons.get(i).mouseClick(e.getX(), e.getY())) {
@@ -804,7 +845,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             
             g2.setColor(Color.RED);
             if(i == t.playerHoldingBomb) {
-                g2.fillRect(otherPlayers.get(i).x + (int) originP.getX() - 5, otherPlayers.get(i).y + (int) originP.getY() - 5, 60, 60);
+                g2.fillRect(otherPlayers.get(i).getX() + (int) originP.getX() - 5, otherPlayers.get(i).getY() + (int) originP.getY() - 5, 60, 60);
             }
 
             try {
@@ -817,15 +858,43 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         }
     }
 
+    private void setGraphics(Graphics2D g2) {
+        playButton.setGraphics(g2);
+        practiceButton.setGraphics(g2);
+        settingsButton.setGraphics(g2);
+        serverNameBox.setGraphics(g2);
+        usernameBox.setGraphics(g2);
+        colorBox.setGraphics(g2);
+        serverIPBox.setGraphics(g2);
+        doneButton.setGraphics(g2);
+        settingsDoneButton.setGraphics(g2);
+        backButton.setGraphics(g2);
+        startButton.setGraphics(g2);
+        customizeButton.setGraphics(g2);
+        customizeDoneButton.setGraphics(g2);
+
+        for(Button b : serverButtons) {
+            b.setGraphics(g2);
+        }
+        
+        for(Button b : serverOptionButtons) {
+            b.setGraphics(g2);
+        }
+    }
+
     private PlayerInfo readPlayerFile() {
         File file = new File("./player.data");
         String name = "Player";
         Color color = Color.GRAY;
+        eyesID = 5;
+        mouthID = 5;
+
         try {
 
         if(file.createNewFile())
         {
             playerInfo = new PlayerInfo("Player", Color.GRAY);
+            face = new Face(eyes.get(eyesID), mouths.get(mouthID), eyesID, mouthID);
             refreshPlayerFile();
         }   
         else {
@@ -834,6 +903,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                     sc.close();
                     playerInfo = new PlayerInfo("Player", Color.GRAY);
                     usernameBox.text = playerInfo.getName();
+                    face = new Face(eyes.get(eyesID), mouths.get(mouthID), eyesID, mouthID);
                     colorBox.text = "#" + colorToHex(playerInfo.getColor());
                     refreshPlayerFile();
                     return playerInfo;
@@ -855,11 +925,22 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     
                 usernameBox.text = name;
                 colorBox.text = colorToHex(color);
+
+                playerInfo = new PlayerInfo(name, color);
+
+                try {
+                    eyesID = Integer.parseInt(sc.nextLine());
+                    mouthID = Integer.parseInt(sc.nextLine());
+                } catch (Exception e) {
+                    eyesID = 0;
+                    mouthID = 0;
+                    refreshPlayerFile();
+                }
         
+                face = new Face(eyes.get(eyesID), mouths.get(mouthID), eyesID, mouthID);
+
                 sc.close();
             } 
-            
-            
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -867,6 +948,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return new PlayerInfo(name, color);
     }
 
@@ -879,8 +961,11 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             
             str += playerInfo.getName() + "\n";
             str += playerInfo.getColor().getRGB();
+            str += "\n";
+            str += eyesID + "\n";
+            str += mouthID + "\n";
 
-            fw.append(str);
+            fw.write(str);
             fw.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -917,6 +1002,32 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         return servers;
     }
 
+    private ArrayList<Eyes> readEyes() {
+        File dir = new File("./lib/player/eyes");
+        File[] files = dir.listFiles();
+        ArrayList<Eyes> eyes = new ArrayList<Eyes>();
+
+        for(File f : files) {
+            ImageIcon img = new ImageIcon(f.getAbsolutePath());
+            eyes.add(new Eyes(img.getImage()));
+        }
+
+        return eyes;
+    }
+
+    private ArrayList<Mouth> readMouths() {
+        File dir = new File("./lib/player/mouth");
+        File[] files = dir.listFiles();
+        ArrayList<Mouth> mouths = new ArrayList<Mouth>();
+
+        for(File f : files) {
+            ImageIcon img = new ImageIcon(f.getAbsolutePath());
+            mouths.add(new Mouth(img.getImage()));
+        }
+
+        return mouths;
+    }
+
     private void refreshServerFile() throws IOException {
         File file = new File("./servers.data");
         try {
@@ -935,7 +1046,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         }
     }
 
-    private String colorToHex(Color color) {
+    private static String colorToHex(Color color) {
         String red = Integer.toHexString(color.getRed());
         String green = Integer.toHexString(color.getGreen());
         String blue = Integer.toHexString(color.getBlue());
