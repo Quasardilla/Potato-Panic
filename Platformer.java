@@ -43,7 +43,7 @@ import java.util.Scanner;
 
 public class Platformer extends JPanel implements KeyListener, MouseMotionListener, MouseListener
 {
-    private static final long serialVersionUID = 1L;
+    private static final String version = "0.5.0";
 
     //Gets width & height of screen (which is hopefully 1080p)
     private static final int PREF_W = Toolkit.getDefaultToolkit().getScreenSize().width;
@@ -84,7 +84,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     serverList, addServer, editServer,
     connecting, connectionError, threadStarted, connThreadStarted;
 
-    private Button playButton, practiceButton, customizeButton, customizeDoneButton, settingsButton, doneButton, settingsDoneButton, backButton, startButton;
+    private Button playButton, practiceButton, customizeButton, customizeDoneButton,
+    prevEyes, nextEyes, nextMouth, prevMouth, 
+    settingsButton, doneButton, settingsDoneButton, backButton, startButton;
     private TextBox serverNameBox, serverIPBox, usernameBox, colorBox;
     private ArrayList<ServerObject> servers;
     private ArrayList<Button> serverButtons;
@@ -166,7 +168,12 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         practiceButton = new Button(buttonX, 720, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
         str = "Edit Player";
         customizeButton = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
-        
+        str = "";
+        prevEyes = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
+        nextEyes = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
+        prevMouth = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
+        nextMouth = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
+
         str = "";
         buttonWidth = 75;
         settingsButton = new Button(PREF_W - 75 - 10, 10, buttonWidth, buttonWidth, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
@@ -206,13 +213,17 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         g2.fillRect(0, 0, PREF_W, PREF_H);
         
         if(titleScreen) {
-            g2.setFont(giantFont);
             g2.setColor(Color.BLACK);
             metrics = g2.getFontMetrics();
             
             g2.drawImage(banner, (PREF_W / 2) - (banner.getWidth(null) / 2), -30, null);
+            Player.drawScaled(g2, playerInfo, largeFont, face, (PREF_W / 2), 280, 250, 250, 5);
 
-            player.drawScaled(g2, playerInfo, largeFont, face, (PREF_W / 2), 280, 250, 250, 5);
+            g2.setColor(Color.BLACK);
+            g2.setFont(mediumFont);
+            g2.drawString(version, 10, PREF_H - 40);
+
+            g2.setFont(giantFont);
 
             playButton.draw();
             practiceButton.draw();
