@@ -37,6 +37,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Scanner;
 
 public class Platformer extends JPanel implements KeyListener, MouseMotionListener, MouseListener
@@ -260,11 +262,12 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             g2.setColor(Color.BLACK);
             g2.setFont(largeFont);
             metrics = g2.getFontMetrics();
-            g2.drawString(str, (PREF_W / 8) - (metrics.stringWidth(str) / 2), 140);
-            g2.fillRect((PREF_W / 8) - 30, 175, 260, 260);
+            g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), 140);
+            g2.fillRect((PREF_W / 2) - 157, 172, 315, 315);
             g2.setColor(playerInfo.getColor());
-            g2.fillRect((PREF_W / 8) - 25, 180, 250, 250);
+            g2.fillRect((PREF_W / 2) - 150, 180, 300, 300);
             g2.setColor(getBackground());
+            face.draw(g2, (PREF_W / 2) - 150, 180, 300, 300);
 
             customizeDoneButton.draw();
 
@@ -1005,6 +1008,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private ArrayList<Eyes> readEyes() {
         File dir = new File("./lib/player/eyes");
         File[] files = dir.listFiles();
+        sortFiles(files);
         ArrayList<Eyes> eyes = new ArrayList<Eyes>();
 
         for(File f : files) {
@@ -1018,6 +1022,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     private ArrayList<Mouth> readMouths() {
         File dir = new File("./lib/player/mouth");
         File[] files = dir.listFiles();
+        sortFiles(files);
         ArrayList<Mouth> mouths = new ArrayList<Mouth>();
 
         for(File f : files) {
@@ -1027,6 +1032,20 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
         return mouths;
     }
+
+    // private ArrayList<Accessory> readAccessories() {
+    //     File dir = new File("./lib/player/accessory");
+    //     File[] files = dir.listFiles();
+    //     sortFiles(files);
+    //     ArrayList<Accessory> accessories = new ArrayList<Accessory>();
+
+    //     for(File f : files) {
+    //         ImageIcon img = new ImageIcon(f.getAbsolutePath());
+    //         accessories.add(new Accessory(img.getImage()));
+    //     }
+
+    //     return accessories;
+    // }
 
     private void refreshServerFile() throws IOException {
         File file = new File("./servers.data");
@@ -1101,5 +1120,13 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     public void gameEnded() {
         resetPlatforms();
         t.playerEliminated = false;
+    }
+
+    public static void sortFiles(File[] files) {
+        Arrays.sort(files, new Comparator<File>() {
+            public int compare(File f1, File f2) {
+                return f1.getName().compareTo(f2.getName());
+            }
+        });
     }
 }
