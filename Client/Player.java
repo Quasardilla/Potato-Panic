@@ -95,6 +95,41 @@ public class Player extends Sprite {
         }
     }
 
+    /**
+     * 
+     * @param g2
+     * Graphics2D object
+     * @param info
+     * PlayerInfo used for color and name
+     * @param font
+     * Font & font size used to draw name
+     * @param face
+     * Eyes & Mouth for player
+     * @param x
+     * Centered on X
+     * @param margin
+     * The thickness of the outline
+     */
+    public static void drawScaled(Graphics2D g2, PlayerInfo info, Font font, Face face, int x, int y, int width, int height, int margin) {
+        String str = info.getName();
+        g2.setColor(Color.BLACK);
+        g2.setFont(font);
+        FontMetrics metrics = g2.getFontMetrics();
+
+        //Name
+        g2.drawString(str, x - (metrics.stringWidth(str) / 2), y - 40);
+
+        //Player Outline
+        g2.fillRect(x - (width / 2) - margin, y - margin, width + (margin * 2), height + (margin * 2));
+
+        //Player
+        g2.setColor(info.getColor());
+        g2.fillRect(x - (width / 2), y, width, height);
+
+        //Face
+        face.draw(g2, (int) x - (width / 2), (int) y, width, height);
+    }
+
     public void jump() {
         if(jumpCount > 1)
             return;

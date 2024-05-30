@@ -211,18 +211,8 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             metrics = g2.getFontMetrics();
             
             g2.drawImage(banner, (PREF_W / 2) - (banner.getWidth(null) / 2), -30, null);
-            
-            g2.setFont(largeFont);
-            metrics = g2.getFontMetrics();
 
-            String str = playerInfo.getName();
-            g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), 240);
-            g2.setColor(Color.BLACK);
-            g2.fillRect((PREF_W / 2) - 130, 275, 260, 260);
-            g2.setColor(playerInfo.getColor());
-            g2.fillRect((PREF_W / 2) - 125, 280, 250, 250);
-
-            face.draw(g2, (PREF_W / 2) - 125, 280, 250, 250);
+            player.drawScaled(g2, playerInfo, largeFont, face, (PREF_W / 2), 280, 250, 250, 5);
 
             playButton.draw();
             practiceButton.draw();
@@ -256,18 +246,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         }
 
         if(editPlayer) {
-            // usernameBox.draw();
-            // colorBox.draw();
-            String str = playerInfo.getName();
-            g2.setColor(Color.BLACK);
-            g2.setFont(largeFont);
-            metrics = g2.getFontMetrics();
-            g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), 140);
-            g2.fillRect((PREF_W / 2) - 157, 172, 315, 315);
-            g2.setColor(playerInfo.getColor());
-            g2.fillRect((PREF_W / 2) - 150, 180, 300, 300);
-            g2.setColor(getBackground());
-            face.draw(g2, (PREF_W / 2) - 150, 180, 300, 300);
+            player.drawScaled(g2, playerInfo, largeFont, face, (PREF_W / 2), 180, 300, 300, 7);
 
             customizeDoneButton.draw();
 
@@ -372,27 +351,22 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             metrics = g2.getFontMetrics();
             g2.setColor(Color.BLACK);
 
-            int initX = margin + 20;
+            int initX = margin + 160;
             int initY = margin + 80;
             int hGap = 20;
             int vGap = 180;
 
             ArrayList<PlayerInfo> infos = t.getPlayerInfos();
 
-            g2.setColor(playerInfo.getColor());
-            g2.fillRect(initX, initY, 200, 200);
-            g2.setColor(Color.BLACK);
-            g2.drawString(playerInfo.getName(), initX + (metrics.stringWidth(playerInfo.getName()) / 2), initY - (metrics.getHeight() / 2) - 20);
+            Player.drawScaled(g2, playerInfo, mediumFont, face, initX, initY, 200, 200, 4);
+
 
             for(int i = 1; i < infos.size() + 1; i++) {
                 int x = initX + (i % 8) * 200 + (i % 8) * hGap;
                 int y = initY + (i / 8) * 100 + (i / 8) * vGap;
                 PlayerInfo info = infos.get(i - 1);
 
-                g2.setColor(info.getColor());
-                g2.fillRect(x, y, 200, 200);
-                g2.setColor(Color.BLACK);
-                g2.drawString(info.getName(), x + (metrics.stringWidth(info.getName()) / 2), y - (metrics.getHeight() / 2) - 20);
+                Player.drawScaled(g2, info, mediumFont, face, x, y, 200, 200, 4);
             }   
 
             if(t.getPlayerInfos().size() < 1) {
@@ -440,7 +414,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             else 
                 sidewaysVelocity = PLAYER_VEL;
                 
-            player.draw(g2, playerInfo, t.playerEliminated);
+            player.draw(g2, playerInfo, face, t.playerEliminated);
             drawOtherPlayers(g2);
 
             metrics = g2.getFontMetrics();
@@ -775,10 +749,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                 if(name.length() > 16)
                     name = name.substring(0, 17);
                 try {
-                    playerInfo = new PlayerInfo(name, Color.decode(colorBox.text));
+                    playerInfo = new PlayerInfo(face, name, Color.decode(colorBox.text));
                 }
                 catch(Exception ex) {
-                    playerInfo = new PlayerInfo(usernameBox.text, Color.GRAY);
+                    playerInfo = new PlayerInfo(face, usernameBox.text, Color.GRAY);
                 }
                 try {
                     refreshPlayerFile();
@@ -889,24 +863,24 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         File file = new File("./player.data");
         String name = "Player";
         Color color = Color.GRAY;
-        eyesID = 5;
-        mouthID = 5;
+        eyesID = 0;
+        mouthID = 0;
 
         try {
 
         if(file.createNewFile())
         {
-            playerInfo = new PlayerInfo("Player", Color.GRAY);
             face = new Face(eyes.get(eyesID), mouths.get(mouthID), eyesID, mouthID);
+            playerInfo = new PlayerInfo(face, "Player", Color.GRAY);
             refreshPlayerFile();
         }   
         else {
                 Scanner sc = new Scanner(file);
                 if(!sc.hasNextLine()) {
                     sc.close();
-                    playerInfo = new PlayerInfo("Player", Color.GRAY);
-                    usernameBox.text = playerInfo.getName();
                     face = new Face(eyes.get(eyesID), mouths.get(mouthID), eyesID, mouthID);
+                    playerInfo = new PlayerInfo(face, "Player", Color.GRAY);
+                    usernameBox.text = playerInfo.getName();
                     colorBox.text = "#" + colorToHex(playerInfo.getColor());
                     refreshPlayerFile();
                     return playerInfo;
@@ -929,7 +903,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                 usernameBox.text = name;
                 colorBox.text = colorToHex(color);
 
-                playerInfo = new PlayerInfo(name, color);
+                playerInfo = new PlayerInfo(face, name, color);
 
                 try {
                     eyesID = Integer.parseInt(sc.nextLine());
@@ -952,7 +926,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             e.printStackTrace();
         }
 
-        return new PlayerInfo(name, color);
+        return new PlayerInfo(face, name, color);
     }
 
     private void refreshPlayerFile() throws IOException {
