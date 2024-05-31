@@ -3,6 +3,8 @@ package UI;
 import java.awt.Color;
 import java.awt.Font;
 
+import javax.swing.ImageIcon;
+
 public class Button extends UIElement{
     public double width;
     public double height;
@@ -13,8 +15,9 @@ public class Button extends UIElement{
     public String text;
     public Color textColor;
     public Color backColor;
+    public ImageIcon img;
 
-    public Button(double x, double y, double width, double height, double xOffset, double yOffset, double fontSize, Font font, String text, Color textColor, Color backColor)
+    public Button(int x, int y, int width, int height, int xOffset, int yOffset, int fontSize, Font font, String text, Color textColor, Color backColor)
     {
         this.x = x;
         this.y = y;
@@ -30,7 +33,7 @@ public class Button extends UIElement{
         this.backColor = backColor;
     }
 
-    public Button(double x, double y, double width, double height, Color color)
+    public Button(int x, int y, int width, int height, Color color)
     {
         this.x = x;
         this.y = y;
@@ -39,12 +42,26 @@ public class Button extends UIElement{
         this.backColor = color;
     }
 
+    public Button(int x, int y, int width, int height, ImageIcon img)
+    {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.img = img;
+        backColor = new Color(0, 0, 0, 0);
+    }
+
     @Override
     public void drawElement() 
     {
         //draw background
         g2.setColor(backColor);
-        g2.fillRect((int) x, (int) y, (int) width, (int) height); 
+        g2.fillRect((int) x, (int) y, (int) width, (int) height);
+        
+        if(img != null) {
+            g2.drawImage(img.getImage(), (int) x, (int) y, (int) width, (int) height, null);
+        }
 
         //draw text
         if(text == null) return;

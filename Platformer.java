@@ -169,10 +169,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         str = "Edit Player";
         customizeButton = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
         str = "";
-        prevEyes = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
-        nextEyes = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
-        prevMouth = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
-        nextMouth = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
+        prevEyes = new Button((PREF_W / 32) * 21, 400, 100, 100, new ImageIcon(settings));
+        nextEyes = new Button((PREF_W / 32) * 27, 400, 100, 100, new ImageIcon(settings));
+        prevMouth = new Button((PREF_W / 32) * 21, 600, 100, 100, new ImageIcon(settings));
+        nextMouth = new Button((PREF_W / 32) * 27, 600, 100, 100, new ImageIcon(settings));
 
         str = "";
         buttonWidth = 75;
@@ -257,7 +257,11 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         }
 
         if(editPlayer) {
-            player.drawScaled(g2, playerInfo, largeFont, face, (PREF_W / 2), 180, 300, 300, 7);
+            Player.drawScaled(g2, playerInfo, largeFont, face, (PREF_W / 2), 180, 300, 300, 7);
+            prevEyes.draw();
+            nextEyes.draw();
+            prevMouth.draw();
+            nextMouth.draw();
 
             customizeDoneButton.draw();
 
@@ -860,6 +864,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         startButton.setGraphics(g2);
         customizeButton.setGraphics(g2);
         customizeDoneButton.setGraphics(g2);
+        prevEyes.setGraphics(g2);
+        nextEyes.setGraphics(g2);
+        prevMouth.setGraphics(g2);
+        nextMouth.setGraphics(g2);
 
         for(Button b : serverButtons) {
             b.setGraphics(g2);
