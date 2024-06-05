@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 
+import Appearance.Face;
 import Server.PlayerLite;
 
 public class ServerHandler extends Thread {
@@ -185,6 +186,8 @@ public class ServerHandler extends Thread {
         out.write(player.color.getRed());
         out.write(player.color.getGreen());
         out.write(player.color.getBlue());
+        out.write(player.face.getEyesID());
+        out.write(player.face.getMouthID());
         out.flush();
     }
 
@@ -243,8 +246,13 @@ public class ServerHandler extends Thread {
             int G = in.read();
             int B = in.read();
             Color color = new Color(R, G, B);
+
+            int eyesID = in.read();
+            int mouthID = in.read();
+
+            Face face = new Face(null, null, eyesID, mouthID);
             
-            players.add(new PlayerInfo(name, color));
+            players.add(new PlayerInfo(face, name, color));
         }
 
         return players;

@@ -27,4 +27,12 @@ public class PlayerInfo {
         return name;
     }
 
+    public Face getFace() {
+        return face;
+    }
+
+    public void setFace(Face face) {
+        this.face = face;
+    }
+
 }

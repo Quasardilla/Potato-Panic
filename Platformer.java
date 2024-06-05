@@ -73,7 +73,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     private Image banner = new ImageIcon("./lib/img/PotatoPanicBanner.png").getImage().getScaledInstance(1920 / 2, 612 / 2, Image.SCALE_SMOOTH);
     private Image settings = new ImageIcon("./lib/img/Settings.png").getImage().getScaledInstance(75, 75, Image.SCALE_SMOOTH);
-    
+    private Image rightArrow = new ImageIcon("./lib/img/ArrowRight.png").getImage();
+    private Image leftArrow = new ImageIcon("./lib/img/ArrowLeft.png").getImage();
+
+
     private ArrayList<Platform> platforms = new ArrayList<Platform>();
     private final double VERTICAL_BOUND_MAX = 4000;
     private final double VERTICAL_BOUND_MIN = -2000;
@@ -169,10 +172,10 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         str = "Edit Player";
         customizeButton = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
         str = "";
-        prevEyes = new Button((PREF_W / 32) * 21, 400, 100, 100, new ImageIcon(settings));
-        nextEyes = new Button((PREF_W / 32) * 27, 400, 100, 100, new ImageIcon(settings));
-        prevMouth = new Button((PREF_W / 32) * 21, 600, 100, 100, new ImageIcon(settings));
-        nextMouth = new Button((PREF_W / 32) * 27, 600, 100, 100, new ImageIcon(settings));
+        prevEyes = new Button((PREF_W / 32) * 22, 400, 50, 100, new ImageIcon(leftArrow));
+        nextEyes = new Button((PREF_W / 32) * 28, 400, 50, 100, new ImageIcon(rightArrow));
+        prevMouth = new Button((PREF_W / 32) * 22, 600, 50, 100, new ImageIcon(leftArrow));
+        nextMouth = new Button((PREF_W / 32) * 28, 600, 50, 100, new ImageIcon(rightArrow));
 
         str = "";
         buttonWidth = 75;
@@ -217,7 +220,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             metrics = g2.getFontMetrics();
             
             g2.drawImage(banner, (PREF_W / 2) - (banner.getWidth(null) / 2), -30, null);
-            Player.drawScaled(g2, playerInfo, largeFont, face, (PREF_W / 2), 280, 250, 250, 5);
+            Player.drawScaled(g2, playerInfo, largeFont, (PREF_W / 2), 280, 250, 250, 5);
 
             g2.setColor(Color.BLACK);
             g2.setFont(mediumFont);
@@ -253,14 +256,22 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             
             for(Platform p : platforms)
                 p.draw(g2);    
-            player.draw(g2, playerInfo, face, false);
+            player.draw(g2, playerInfo, false);
         }
 
         if(editPlayer) {
-            Player.drawScaled(g2, playerInfo, largeFont, face, (PREF_W / 2), 180, 300, 300, 7);
+            Player.drawScaled(g2, playerInfo, largeFont, (PREF_W / 2), 180, 300, 300, 7);
+            int center = (int) ((nextEyes.x - prevEyes.x) / 2);
+
             prevEyes.draw();
+            g2.setFont(largeFont);
+            metrics = g2.getFontMetrics();
+            g2.setColor(Color.BLACK);
+            g2.drawString("Eyes " + (eyesID + 1), (int) prevEyes.x + center - (metrics.stringWidth("Eyes " + (eyesID + 1)) / 4) , (int) prevEyes.y + (int) (prevEyes.width) + (metrics.getHeight() / 4));
             nextEyes.draw();
             prevMouth.draw();
+            g2.setColor(Color.BLACK);
+            g2.drawString("Mouth " + (mouthID + 1), (int) prevMouth.x + center - (metrics.stringWidth("Mouth " + (mouthID + 1)) / 4) , (int) prevMouth.y + (int) (prevMouth.width) + (metrics.getHeight() / 4));
             nextMouth.draw();
 
             customizeDoneButton.draw();
@@ -373,7 +384,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
             ArrayList<PlayerInfo> infos = t.getPlayerInfos();
 
-            Player.drawScaled(g2, playerInfo, mediumFont, face, initX, initY, 200, 200, 4);
+            Player.drawScaled(g2, playerInfo, mediumFont, initX, initY, 200, 200, 4);
 
 
             for(int i = 1; i < infos.size() + 1; i++) {
@@ -381,7 +392,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                 int y = initY + (i / 8) * 100 + (i / 8) * vGap;
                 PlayerInfo info = infos.get(i - 1);
 
-                Player.drawScaled(g2, info, mediumFont, face, x, y, 200, 200, 4);
+                Player.drawScaled(g2, info, mediumFont, x, y, 200, 200, 4);
             }   
 
             if(t.getPlayerInfos().size() < 1) {
@@ -429,7 +440,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             else 
                 sidewaysVelocity = PLAYER_VEL;
                 
-            player.draw(g2, playerInfo, face, t.playerEliminated);
+            player.draw(g2, playerInfo, t.playerEliminated);
             drawOtherPlayers(g2);
 
             metrics = g2.getFontMetrics();
@@ -649,6 +660,35 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                 if(customizeDoneButton.mouseClick(e.getX(), e.getY())) {
                     editPlayer = false;
                     titleScreen = true;
+                    try {
+                        refreshPlayerFile();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+                if(prevEyes.mouseClick(e.getX(), e.getY())) {
+                    eyesID--;
+                    if(eyesID < 0)
+                        eyesID = eyes.size() - 1;
+                    refreshFace();
+                }
+                if(nextEyes.mouseClick(e.getX(), e.getY())) {
+                    eyesID++;
+                    if(eyesID >= eyes.size())
+                        eyesID = 0;
+                    refreshFace();
+                }
+                if(prevMouth.mouseClick(e.getX(), e.getY())) {
+                    mouthID--;
+                    if(mouthID < 0)
+                        mouthID = mouths.size() - 1;
+                    refreshFace();
+                }
+                if(nextMouth.mouseClick(e.getX(), e.getY())) {
+                    mouthID++;
+                    if(mouthID >= mouths.size())
+                        mouthID = 0;
+                    refreshFace();
                 }
                 return;
             }
@@ -828,6 +868,12 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         for(int i = 0; i < otherPlayers.size(); i++) {
             if(i > otherPlayerInfos.size() - 1)
                 break;
+
+            if(!otherPlayerInfos.get(i).getFace().hasImages()) {
+                Face face = otherPlayerInfos.get(i).getFace();
+                face.setEyes(eyes.get(face.getEyesID()));
+                face.setMouth(mouths.get(face.getMouthID()));
+            }
 
             if(t.getEliminatedPlayers().contains(i)) {
                 if(t.playerEliminated)
@@ -1039,6 +1085,11 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
     //     return accessories;
     // }
+
+    private void refreshFace() {
+        face = new Face(eyes.get(eyesID), mouths.get(mouthID), eyesID, mouthID);
+        playerInfo.setFace(face);
+    }
 
     private void refreshServerFile() throws IOException {
         File file = new File("./servers.data");

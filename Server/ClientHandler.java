@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 
+import Appearance.Face;
 import Client.PlayerInfo;
 
 class ClientHandler extends Thread
@@ -167,7 +168,12 @@ class ClientHandler extends Thread
 		int B = in.read();
 		Color color = new Color(R, G, B);
 		System.out.println(name + ", " + color);
-		return new PlayerInfo(name, color);
+		int eyesID = in.read();
+		int mouthID = in.read();
+		Face face = new Face(null, null, eyesID, mouthID);
+
+
+		return new PlayerInfo(face, name, color);
 	}
 
 	public void sendStartGame() throws IOException {
@@ -189,6 +195,8 @@ class ClientHandler extends Thread
 			out.write(otherPlayer.getName().length());
 			out.write(MasterClientHandler.toByteArray(otherPlayer.getName()));
 			out.write(MasterClientHandler.toByteArray(otherPlayer.getColor()));
+			out.write(otherPlayer.getFace().getEyesID());
+			out.write(otherPlayer.getFace().getMouthID());
 		}
 		out.flush();
 	}

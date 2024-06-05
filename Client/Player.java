@@ -53,11 +53,6 @@ public class Player extends Sprite {
         super.updateCenter();
     }
 
-    public void draw(Graphics2D g2, PlayerInfo info, Face face, boolean eliminated) {
-        draw(g2, info, eliminated);
-        face.draw(g2, (int) x, (int) y, width, height);
-    }
-
     public void draw(Graphics2D g2, PlayerInfo info, boolean eliminated) {
         g2.setFont(font);
         int margin = 3;
@@ -93,6 +88,8 @@ public class Player extends Sprite {
             g2.setColor(info.getColor());
             g2.fillRect((int)((x % 1 > 0.4) ? Math.ceil(x) : Math.floor(x)), (int) ((y % 1 > 0.4) ? Math.ceil(y) : Math.floor(y)), width, height);
         }
+
+        info.getFace().draw(g2, (int)((x % 1 > 0.4) ? Math.ceil(x) : Math.floor(x)), (int) ((y % 1 > 0.4) ? Math.ceil(y) : Math.floor(y)), width, height);
     }
 
     /**
@@ -110,7 +107,7 @@ public class Player extends Sprite {
      * @param margin
      * The thickness of the outline
      */
-    public static void drawScaled(Graphics2D g2, PlayerInfo info, Font font, Face face, int x, int y, int width, int height, int margin) {
+    public static void drawScaled(Graphics2D g2, PlayerInfo info, Font font, int x, int y, int width, int height, int margin) {
         String str = info.getName();
         g2.setColor(Color.BLACK);
         g2.setFont(font);
@@ -127,7 +124,7 @@ public class Player extends Sprite {
         g2.fillRect(x - (width / 2), y, width, height);
 
         //Face
-        face.draw(g2, (int) x - (width / 2), (int) y, width, height);
+        info.getFace().draw(g2, (int) x - (width / 2), (int) y, width, height);
     }
 
     public void jump() {

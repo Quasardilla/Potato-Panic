@@ -44,11 +44,23 @@ public class Face {
         }
     }
 
+    public void setEyes(Eyes eyes) {
+        this.eyes = eyes;
+    }
+
+    public void setMouth(Mouth mouth) {
+        this.mouth = mouth;
+    }
+
     public int getEyesID() {
         return eyesID;
     }
 
     public int getMouthID() {
         return mouthID;
+    }
+
+    public boolean hasImages() {
+        return eyes != null && mouth != null;
     }
 }
