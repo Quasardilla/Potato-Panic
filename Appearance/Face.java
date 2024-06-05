@@ -36,6 +36,8 @@ public class Face {
     }
 
     public void draw(Graphics2D g2, int x, int y, int width, int height) {
+        if(eyes == null || mouth == null) return;
+
         eyes.draw(g2, x, y, width, height);
         mouth.draw(g2, x, y, width, height);
 

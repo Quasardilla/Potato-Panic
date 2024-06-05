@@ -250,6 +250,8 @@ public class ServerHandler extends Thread {
             int eyesID = in.read();
             int mouthID = in.read();
 
+            System.out.println("Name: " + name + " Color: " + color + " Eyes: " + eyesID + " Mouth: " + mouthID);
+
             Face face = new Face(null, null, eyesID, mouthID);
             
             players.add(new PlayerInfo(face, name, color));

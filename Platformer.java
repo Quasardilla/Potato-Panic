@@ -43,7 +43,7 @@ import java.util.Scanner;
 
 public class Platformer extends JPanel implements KeyListener, MouseMotionListener, MouseListener
 {
-    private static final String version = "0.5.0";
+    private static final String version = "0.5.2";
 
     //Gets width & height of screen (which is hopefully 1080p)
     private static final int PREF_W = Toolkit.getDefaultToolkit().getScreenSize().width;
@@ -381,6 +381,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             int initY = margin + 80;
             int hGap = 20;
             int vGap = 180;
+            
 
             ArrayList<PlayerInfo> infos = t.getPlayerInfos();
 
@@ -391,6 +392,13 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                 int x = initX + (i % 8) * 200 + (i % 8) * hGap;
                 int y = initY + (i / 8) * 100 + (i / 8) * vGap;
                 PlayerInfo info = infos.get(i - 1);
+
+                if(!info.getFace().hasImages()) {
+                    System.out.println("meow");
+                    Face face = info.getFace();
+                    face.setEyes(eyes.get(face.getEyesID()));
+                    face.setMouth(mouths.get(face.getMouthID()));
+                }
 
                 Player.drawScaled(g2, info, mediumFont, x, y, 200, 200, 4);
             }   
