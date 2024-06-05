@@ -62,7 +62,10 @@ public class TextBox extends UIElement implements KeyListener
     {
         if (mousex > x && mousex < x + width && mousey > y && mousey < y + height) {
             isSelected = true;
-            cursorPos = text.length();
+            if(text != null)
+                cursorPos = text.length();
+            else 
+                cursorPos = 0;
         }
         else 
             isSelected = false;
