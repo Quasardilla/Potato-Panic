@@ -43,7 +43,7 @@ import java.util.Scanner;
 
 public class Platformer extends JPanel implements KeyListener, MouseMotionListener, MouseListener
 {
-    private static final String version = "0.5.2";
+    private static final String version = "0.5.21";
 
     //Gets width & height of screen (which is hopefully 1080p)
     private static final int PREF_W = Toolkit.getDefaultToolkit().getScreenSize().width;
@@ -256,7 +256,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             
             for(Platform p : platforms)
                 p.draw(g2);    
-            player.draw(g2, playerInfo, false);
+            player.draw(g2, playerInfo, false, false);
         }
 
         if(editPlayer) {
@@ -441,14 +441,12 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
                 p.draw(g2);    
             
             if(t.playerHoldingBomb == 255 && !t.playerEliminated) {
-                g2.setColor(Color.RED);
-                g2.fillRect((int) player.getX() - 5, (int) player.getY() - 5, 60, 60);
                 sidewaysVelocity = GHOST_VEL;
             }
             else 
                 sidewaysVelocity = PLAYER_VEL;
                 
-            player.draw(g2, playerInfo, t.playerEliminated);
+            player.draw(g2, playerInfo, t.playerEliminated, (t.playerHoldingBomb == 255 && !t.playerEliminated));
             drawOtherPlayers(g2);
 
             metrics = g2.getFontMetrics();
@@ -885,17 +883,12 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
 
             if(t.getEliminatedPlayers().contains(i)) {
                 if(t.playerEliminated)
-                    otherPlayers.get(i).draw(g2, originP, otherPlayerInfos.get(i), true);
+                    otherPlayers.get(i).draw(g2, originP, otherPlayerInfos.get(i), true, false);
                 continue;
-            }
-            
-            g2.setColor(Color.RED);
-            if(i == t.playerHoldingBomb) {
-                g2.fillRect(otherPlayers.get(i).getX() + (int) originP.getX() - 5, otherPlayers.get(i).getY() + (int) originP.getY() - 5, 60, 60);
             }
 
             try {
-                otherPlayers.get(i).draw(g2, originP, otherPlayerInfos.get(i), false);
+                otherPlayers.get(i).draw(g2, originP, otherPlayerInfos.get(i), false, i == t.playerHoldingBomb);
             } catch (Exception e) {
                 System.out.println(i);
                 e.printStackTrace();

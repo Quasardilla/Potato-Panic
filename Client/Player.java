@@ -53,7 +53,7 @@ public class Player extends Sprite {
         super.updateCenter();
     }
 
-    public void draw(Graphics2D g2, PlayerInfo info, boolean eliminated) {
+    public void draw(Graphics2D g2, PlayerInfo info, boolean eliminated, boolean hasBomb) {
         g2.setFont(font);
         int margin = 3;
         FontMetrics metrics = g2.getFontMetrics();
@@ -81,7 +81,12 @@ public class Player extends Sprite {
             g2.drawString(info.getName(), (int) (x + width / 2) - metrics.stringWidth(info.getName()) / 2, (int) y - 16);
             
             //Player Outline
-            g2.setColor(Color.BLACK);
+            if(hasBomb) {
+                g2.setColor(Color.RED);
+            }
+            else {
+                g2.setColor(Color.BLACK);
+            }
             g2.fillRect((int)((x % 1 > 0.4) ? Math.ceil(x) : Math.floor(x)) - margin, (int) ((y % 1 > 0.4) ? Math.ceil(y) : Math.floor(y)) - margin, width + margin * 2, height + margin * 2);
 
             //Player
