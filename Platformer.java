@@ -43,7 +43,7 @@ import java.util.Scanner;
 
 public class Platformer extends JPanel implements KeyListener, MouseMotionListener, MouseListener
 {
-    private static final String version = "0.5.21";
+    private static final String version = "0.5.22";
 
     //Gets width & height of screen (which is hopefully 1080p)
     private static final int PREF_W = Toolkit.getDefaultToolkit().getScreenSize().width;
