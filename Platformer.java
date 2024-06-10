@@ -43,7 +43,7 @@ import java.util.Scanner;
 
 public class Platformer extends JPanel implements KeyListener, MouseMotionListener, MouseListener
 {
-    private static final String version = "0.5.22";
+    private static final String version = "0.5.25";
 
     //Gets width & height of screen (which is hopefully 1080p)
     private static final int PREF_W = Toolkit.getDefaultToolkit().getScreenSize().width;
@@ -147,8 +147,8 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
          */
         serverNameBox = new TextBox(buttonX, 200, buttonWidth, 50, Color.GRAY, mediumFont, Color.WHITE, "New Server", Color.LIGHT_GRAY);
         serverIPBox = new TextBox(buttonX, 300, buttonWidth, 50, Color.GRAY, mediumFont, Color.WHITE, "127.0.0.1:5100", Color.LIGHT_GRAY);
-        usernameBox = new TextBox(300, 200, buttonWidth, 50, Color.GRAY, mediumFont, Color.WHITE, "Player", Color.LIGHT_GRAY);
-        colorBox = new TextBox(300, 300, buttonWidth, 50, Color.GRAY, mediumFont, Color.WHITE, "#ababab", Color.LIGHT_GRAY);
+        usernameBox = new TextBox(buttonX, 550, buttonWidth, 50, Color.GRAY, mediumFont, Color.WHITE, "Player", Color.LIGHT_GRAY);
+        colorBox = new TextBox(buttonX, 625, buttonWidth, 50, Color.GRAY, mediumFont, Color.WHITE, "#ababab", Color.LIGHT_GRAY);
         
         str = "Back";
         backButton = new Button(buttonX, PREF_H - 400, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight() + 10, largeFont.getSize(), largeFont, str, Color.WHITE, Color.BLACK);
@@ -158,7 +158,7 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         metrics = getFontMetrics(giantFont);
 
         str = "Done";
-        settingsDoneButton = new Button(buttonX, PREF_H - 400, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
+        settingsDoneButton = new Button(buttonX, PREF_H - 250, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
         doneButton = new Button(buttonX, PREF_H - 400, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
         customizeDoneButton = new Button(buttonX, 840, buttonWidth, buttonHeight, (buttonWidth / 2) - (metrics.stringWidth(str) / 2), metrics.getHeight(), giantFont.getSize(), giantFont, str, Color.WHITE, Color.BLACK);
 
@@ -262,6 +262,9 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
         if(editPlayer) {
             Player.drawScaled(g2, playerInfo, largeFont, (PREF_W / 2), 180, 300, 300, 7);
             int center = (int) ((nextEyes.x - prevEyes.x) / 2);
+
+            usernameBox.draw();
+            colorBox.draw();
 
             prevEyes.draw();
             g2.setFont(largeFont);
@@ -476,19 +479,14 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             g2.setColor(new Color(255, 240, 201));
             g2.fillRect(margin, margin, PREF_W - (margin * 2), PREF_H - (margin * 2));
 
-            g2.fillRect((int) settingsButton.x, (int) settingsButton.y, (int) settingsButton.width, (int) settingsButton.height);
-            g2.drawImage(settings, (int) settingsButton.x, (int) settingsButton.y, null);
-
             settingsDoneButton.draw();
-            usernameBox.draw();
-            colorBox.draw();
 
-            g2.setFont(largeFont);
+            g2.setFont(giantFont);
             g2.setColor(Color.BLACK);
             metrics = g2.getFontMetrics();
             
             String str = "Settings";
-            g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), margin + 50);
+            g2.drawString(str, (PREF_W / 2) - (metrics.stringWidth(str) / 2), margin + 100);
 
             g2.setFont(mediumFont);
             g2.setColor(Color.BLACK);
@@ -602,9 +600,27 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             serverIPBox.keyTyped(e);
         }
 
-        if(showSettings) {
+        if(editPlayer) {
             usernameBox.keyTyped(e);
             colorBox.keyTyped(e);
+
+            String name = usernameBox.text;
+            if(name.equals(""))
+                name = "Player";
+            
+            if(name.length() > 16)
+                name = name.substring(0, 17);
+            try {
+                playerInfo = new PlayerInfo(face, name, Color.decode(colorBox.text));
+            }
+            catch(Exception ex) {
+                playerInfo = new PlayerInfo(face, usernameBox.text, Color.GRAY);
+            }
+            try {
+                refreshPlayerFile();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
 
     }
@@ -657,20 +673,17 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
     @Override
     public void mousePressed(MouseEvent e) {
 
-        if(settingsButton.mouseClick(e.getX(), e.getY()))
-            showSettings = !showSettings;
+        if(settingsButton.mouseClick(e.getX(), e.getY()) && !showSettings)
+            showSettings = true;
 
         if(!showSettings) {
-
             if(editPlayer) {
+                usernameBox.mouseClick(e.getX(), e.getY());
+                colorBox.mouseClick(e.getX(), e.getY());
+
                 if(customizeDoneButton.mouseClick(e.getX(), e.getY())) {
                     editPlayer = false;
                     titleScreen = true;
-                    try {
-                        refreshPlayerFile();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
                 }
                 if(prevEyes.mouseClick(e.getX(), e.getY())) {
                     eyesID--;
@@ -801,8 +814,6 @@ public class Platformer extends JPanel implements KeyListener, MouseMotionListen
             }
         }
         else {
-            usernameBox.mouseClick(e.getX(), e.getY());
-            colorBox.mouseClick(e.getX(), e.getY());
             if(settingsDoneButton.mouseClick(e.getX(), e.getY())) {
                 String name = usernameBox.text;
                 if(name.equals(""))
